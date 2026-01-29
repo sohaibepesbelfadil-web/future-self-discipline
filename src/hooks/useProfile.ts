@@ -7,6 +7,8 @@ export interface Profile {
   user_id: string;
   email: string | null;
   display_name: string | null;
+  username: string | null;
+  profile_visible: boolean;
   onboarding_completed: boolean;
   commitment_accepted_at: string | null;
   created_at: string;
