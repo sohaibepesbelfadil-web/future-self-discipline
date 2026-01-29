@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      connections: {
+        Row: {
+          addressee_id: string
+          connection_type: Database["public"]["Enums"]["connection_type"]
+          created_at: string
+          hide_broken_promises: boolean
+          id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["connection_status"]
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          connection_type?: Database["public"]["Enums"]["connection_type"]
+          created_at?: string
+          hide_broken_promises?: boolean
+          id?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          connection_type?: Database["public"]["Enums"]["connection_type"]
+          created_at?: string
+          hide_broken_promises?: boolean
+          id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_logs: {
         Row: {
           created_at: string
@@ -55,6 +88,77 @@ export type Database = {
           },
         ]
       }
+      group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          joined_at: string | null
+          status: Database["public"]["Enums"]["group_member_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          joined_at?: string | null
+          status?: Database["public"]["Enums"]["group_member_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          joined_at?: string | null
+          status?: Database["public"]["Enums"]["group_member_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          average_score: number
+          created_at: string
+          description: string | null
+          group_type: Database["public"]["Enums"]["group_type"]
+          id: string
+          member_count: number
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          average_score?: number
+          created_at?: string
+          description?: string | null
+          group_type?: Database["public"]["Enums"]["group_type"]
+          id?: string
+          member_count?: number
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          average_score?: number
+          created_at?: string
+          description?: string | null
+          group_type?: Database["public"]["Enums"]["group_type"]
+          id?: string
+          member_count?: number
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           commitment_accepted_at: string | null
@@ -63,8 +167,10 @@ export type Database = {
           email: string | null
           id: string
           onboarding_completed: boolean | null
+          profile_visible: boolean
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           commitment_accepted_at?: string | null
@@ -73,8 +179,10 @@ export type Database = {
           email?: string | null
           id?: string
           onboarding_completed?: boolean | null
+          profile_visible?: boolean
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           commitment_accepted_at?: string | null
@@ -83,8 +191,10 @@ export type Database = {
           email?: string | null
           id?: string
           onboarding_completed?: boolean | null
+          profile_visible?: boolean
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -124,15 +234,96 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_scores: {
+        Row: {
+          consistency_percentage: number
+          created_at: string
+          current_streak: number
+          discipline_score: number
+          id: string
+          leaderboard_visible: boolean
+          longest_streak: number
+          promises_broken: number
+          promises_kept: number
+          total_promises: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consistency_percentage?: number
+          created_at?: string
+          current_streak?: number
+          discipline_score?: number
+          id?: string
+          leaderboard_visible?: boolean
+          longest_streak?: number
+          promises_broken?: number
+          promises_kept?: number
+          total_promises?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consistency_percentage?: number
+          created_at?: string
+          current_streak?: number
+          discipline_score?: number
+          id?: string
+          leaderboard_visible?: boolean
+          longest_streak?: number
+          promises_broken?: number
+          promises_kept?: number
+          total_promises?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      are_connected: {
+        Args: { _user1: string; _user2: string }
+        Returns: boolean
+      }
+      get_user_score: { Args: { _user_id: string }; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      connection_status: "pending" | "accepted" | "rejected"
+      connection_type: "friend" | "family"
+      group_member_status: "pending" | "member" | "admin"
+      group_type: "public" | "private"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -259,6 +450,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      connection_status: ["pending", "accepted", "rejected"],
+      connection_type: ["friend", "family"],
+      group_member_status: ["pending", "member", "admin"],
+      group_type: ["public", "private"],
+    },
   },
 } as const
