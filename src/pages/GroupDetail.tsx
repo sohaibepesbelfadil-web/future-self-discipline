@@ -10,7 +10,7 @@ import {
   useApproveMember,
 } from '@/hooks/useGroups';
 import { getRankFromScore } from '@/hooks/useScores';
-import Navbar from '@/components/Navbar';
+import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import RankBadge from '@/components/RankBadge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -71,9 +71,9 @@ const GroupDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-20 pb-12 px-6">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <ResponsiveNavbar />
+      <main className="pt-16 md:pt-20 pb-12 px-4 md:px-6">
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <Link
@@ -81,7 +81,8 @@ const GroupDetail: React.FC = () => {
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Groups
+              <span className="hidden sm:inline">Back to Groups</span>
+              <span className="sm:hidden">Back</span>
             </Link>
             {!isOwner && (
               <Button
@@ -91,39 +92,39 @@ const GroupDetail: React.FC = () => {
                 disabled={leaveGroup.isPending}
                 className="text-destructive hover:text-destructive"
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Leave
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Leave</span>
               </Button>
             )}
           </div>
 
           {/* Group Header */}
-          <div className="glass-card p-8 text-center space-y-4">
+          <div className="glass-card p-6 md:p-8 text-center space-y-4">
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
               {group.group_type === 'private' ? (
-                <Lock className="w-5 h-5" />
+                <Lock className="w-4 h-4 md:w-5 md:h-5" />
               ) : (
-                <Globe className="w-5 h-5" />
+                <Globe className="w-4 h-4 md:w-5 md:h-5" />
               )}
               <span className="text-xs font-mono uppercase">{group.group_type}</span>
             </div>
-            <h1 className="text-3xl font-mono font-bold">{group.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-mono font-bold">{group.name}</h1>
             {group.description && (
-              <p className="text-muted-foreground max-w-lg mx-auto">{group.description}</p>
+              <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto">{group.description}</p>
             )}
-            <div className="flex items-center justify-center gap-6 text-sm">
+            <div className="flex items-center justify-center gap-4 md:gap-6 text-sm">
               <div className="text-center">
-                <p className="text-2xl font-mono font-bold">{group.member_count}</p>
+                <p className="text-xl md:text-2xl font-mono font-bold">{group.member_count}</p>
                 <p className="text-xs text-muted-foreground uppercase">Members</p>
               </div>
-              <div className="w-px h-10 bg-border" />
+              <div className="w-px h-8 md:h-10 bg-border" />
               <div className="text-center">
-                <p className="text-2xl font-mono font-bold">{Math.round(group.average_score || 0)}</p>
+                <p className="text-xl md:text-2xl font-mono font-bold">{Math.round(group.average_score || 0)}</p>
                 <p className="text-xs text-muted-foreground uppercase">Avg Score</p>
               </div>
-              <div className="w-px h-10 bg-border" />
+              <div className="w-px h-8 md:h-10 bg-border" />
               <div className="text-center">
-                <p className="text-2xl font-mono font-bold text-primary">{groupRank}</p>
+                <p className="text-xl md:text-2xl font-mono font-bold text-primary">{groupRank}</p>
                 <p className="text-xs text-muted-foreground uppercase">Rank</p>
               </div>
             </div>
@@ -172,8 +173,8 @@ const GroupDetail: React.FC = () => {
             </div>
           )}
 
-          {/* Members Table */}
-          <div className="glass-card overflow-hidden">
+          {/* Members Table - Desktop */}
+          <div className="glass-card overflow-hidden hidden md:block">
             <div className="p-4 border-b border-border">
               <h2 className="font-mono uppercase tracking-widest text-sm text-muted-foreground">
                 Members
@@ -243,6 +244,56 @@ const GroupDetail: React.FC = () => {
                 )}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Members Cards - Mobile */}
+          <div className="md:hidden space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-mono uppercase tracking-widest text-sm text-muted-foreground">
+                Members
+              </h2>
+            </div>
+            {members?.map((member, index) => {
+              const isMe = member.user_id === user.id;
+              const isMemberOwner = member.user_id === group.owner_id;
+
+              return (
+                <div
+                  key={member.id}
+                  className={`glass-card p-4 ${isMe ? 'border-primary/50' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-muted border border-border">
+                      <span className="text-xs font-mono font-bold text-muted-foreground">
+                        {index + 1}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        {isMemberOwner && <Crown className="w-3 h-3 text-warning" />}
+                        <p className={`font-mono text-sm truncate ${isMe ? 'text-primary' : ''}`}>
+                          {member.profile?.display_name || member.profile?.username || 'Anonymous'}
+                          {isMe && <span className="text-xs text-muted-foreground ml-1">(You)</span>}
+                        </p>
+                      </div>
+                      <RankBadge score={member.score?.discipline_score || 0} size="sm" />
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono font-bold text-sm">{member.score?.discipline_score || 0}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {Number(member.score?.consistency_percentage || 0).toFixed(0)}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {(!members || members.length === 0) && (
+              <div className="glass-card p-8 text-center text-muted-foreground">
+                No members yet.
+              </div>
+            )}
           </div>
 
           {/* Group Rules */}

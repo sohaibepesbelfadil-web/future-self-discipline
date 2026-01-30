@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useAllDailyLogs } from '@/hooks/usePromises';
-import Navbar from '@/components/Navbar';
+import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, getDay, isFuture, isToday } from 'date-fns';
 
 const Calendar: React.FC = () => {
@@ -40,39 +40,45 @@ const Calendar: React.FC = () => {
   if (!user) return <Navigate to="/auth" replace />;
   if (profile && !profile.onboarding_completed) return <Navigate to="/onboarding" replace />;
 
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const weekDaysFull = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-20 pb-12 px-6">
+      <ResponsiveNavbar />
+      <main className="pt-16 md:pt-20 pb-12 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-bold">{format(currentMonth, 'MMMM yyyy')}</h1>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+            <h1 className="text-xl md:text-2xl font-bold">{format(currentMonth, 'MMMM yyyy')}</h1>
             <div className="flex gap-2">
-              <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="btn-outline-harsh px-4 py-2">Prev</button>
-              <button onClick={() => setCurrentMonth(new Date())} className="btn-outline-harsh px-4 py-2">Today</button>
-              <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="btn-outline-harsh px-4 py-2">Next</button>
+              <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="btn-outline-harsh px-3 md:px-4 py-2 text-xs md:text-sm">Prev</button>
+              <button onClick={() => setCurrentMonth(new Date())} className="btn-outline-harsh px-3 md:px-4 py-2 text-xs md:text-sm">Today</button>
+              <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="btn-outline-harsh px-3 md:px-4 py-2 text-xs md:text-sm">Next</button>
             </div>
           </div>
 
-          <div className="glass-card p-6">
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {weekDays.map((day) => (<div key={day} className="text-center text-xs font-mono text-muted-foreground py-2">{day}</div>))}
+          <div className="glass-card p-4 md:p-6">
+            {/* Mobile week days */}
+            <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4 md:hidden">
+              {weekDays.map((day, i) => (<div key={i} className="text-center text-xs font-mono text-muted-foreground py-1">{day}</div>))}
             </div>
-            <div className="grid grid-cols-7 gap-2">
+            {/* Desktop week days */}
+            <div className="hidden md:grid grid-cols-7 gap-2 mb-4">
+              {weekDaysFull.map((day) => (<div key={day} className="text-center text-xs font-mono text-muted-foreground py-2">{day}</div>))}
+            </div>
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
               {monthDays.map((day, i) => {
                 if (!day) return <div key={`empty-${i}`} className="aspect-square" />;
                 const status = getLogStatus(day);
                 const future = isFuture(day);
                 const todayDate = isToday(day);
-                let dayClass = 'aspect-square flex flex-col items-center justify-center p-2 text-sm transition-colors';
+                let dayClass = 'aspect-square flex flex-col items-center justify-center p-1 md:p-2 text-xs md:text-sm transition-colors';
                 if (future) dayClass += ' text-muted-foreground/50';
                 else if (status === 'kept') dayClass += ' bg-success/20 text-success border border-success/30';
                 else if (status === 'broken') dayClass += ' bg-destructive/20 text-destructive border border-destructive/30';
                 else if (status === 'mixed') dayClass += ' bg-warning/20 text-warning border border-warning/30';
                 else dayClass += ' bg-muted text-muted-foreground border border-border';
-                if (todayDate) dayClass += ' ring-2 ring-primary';
+                if (todayDate) dayClass += ' ring-1 md:ring-2 ring-primary';
                 return (<div key={day.toISOString()} className={dayClass}><span className="font-medium">{format(day, 'd')}</span></div>);
               })}
             </div>

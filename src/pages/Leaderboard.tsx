@@ -3,7 +3,7 @@ import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useLeaderboard, getRankFromScore, useMyScore } from '@/hooks/useScores';
-import Navbar from '@/components/Navbar';
+import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import RankBadge from '@/components/RankBadge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Crown, Medal, Award } from 'lucide-react';
@@ -45,9 +45,9 @@ const Leaderboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-20 pb-12 px-6">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <ResponsiveNavbar />
+      <main className="pt-16 md:pt-20 pb-12 px-4 md:px-6">
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <Link
@@ -55,32 +55,32 @@ const Leaderboard: React.FC = () => {
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Link>
           </div>
 
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-mono font-bold uppercase tracking-widest">
+            <h1 className="text-2xl md:text-3xl font-mono font-bold uppercase tracking-widest">
               Classement
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               Ranked by discipline. Sorted by commitment.
             </p>
           </div>
 
           {/* My Position */}
           {myScore && myPosition !== undefined && myPosition >= 0 && (
-            <div className="glass-card p-6 text-center">
+            <div className="glass-card p-4 md:p-6 text-center">
               <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">
                 Your Position
               </p>
-              <div className="flex items-center justify-center gap-4">
-                <span className="text-4xl font-mono font-bold text-primary">
+              <div className="flex items-center justify-center gap-3 md:gap-4">
+                <span className="text-3xl md:text-4xl font-mono font-bold text-primary">
                   #{myPosition + 1}
                 </span>
                 <div className="text-left">
                   <RankBadge score={myScore.discipline_score} />
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
                     {myScore.discipline_score} points
                   </p>
                 </div>
@@ -88,8 +88,8 @@ const Leaderboard: React.FC = () => {
             </div>
           )}
 
-          {/* Leaderboard Table */}
-          <div className="glass-card overflow-hidden">
+          {/* Leaderboard Table - Desktop */}
+          <div className="glass-card overflow-hidden hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow className="border-b border-border hover:bg-transparent">
@@ -157,6 +157,52 @@ const Leaderboard: React.FC = () => {
                 )}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Leaderboard Cards - Mobile */}
+          <div className="space-y-3 md:hidden">
+            {leaderboard?.map((entry, index) => {
+              const isMe = entry.user_id === user.id;
+              const displayName = entry.profiles?.username || 
+                entry.profiles?.display_name || 
+                'Anonymous';
+
+              return (
+                <div
+                  key={entry.id}
+                  className={`glass-card p-4 ${isMe ? 'border-primary/50' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 bg-muted border border-border">
+                      {getPositionIcon(index) || (
+                        <span className="text-sm font-mono font-bold text-muted-foreground">
+                          {index + 1}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-mono text-sm truncate ${isMe ? 'text-primary' : ''}`}>
+                        {displayName}
+                        {isMe && <span className="text-xs text-muted-foreground ml-1">(You)</span>}
+                      </p>
+                      <RankBadge score={entry.discipline_score} size="sm" />
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono font-bold text-sm">{entry.discipline_score}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {Number(entry.consistency_percentage).toFixed(0)}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {(!leaderboard || leaderboard.length === 0) && (
+              <div className="text-center py-12 text-muted-foreground glass-card">
+                No entries yet. Start keeping your promises.
+              </div>
+            )}
           </div>
 
           {/* Philosophy note */}
