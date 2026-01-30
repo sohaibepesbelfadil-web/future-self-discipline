@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useActivePromises, useDailyLogs } from '@/hooks/usePromises';
-import Navbar from '@/components/Navbar';
+import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import PromiseCard from '@/components/PromiseCard';
 import CreatePromiseForm from '@/components/CreatePromiseForm';
 
@@ -26,12 +26,12 @@ const Promises: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-20 pb-12 px-6">
+      <ResponsiveNavbar />
+      <main className="pt-16 md:pt-20 pb-12 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold mb-2">Your Promises</h1>
-            <p className="text-muted-foreground">Words become actions. Actions become identity.</p>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-xl md:text-2xl font-bold mb-2">Your Promises</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Words become actions. Actions become identity.</p>
           </div>
 
           <div className="space-y-6">

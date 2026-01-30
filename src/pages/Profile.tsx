@@ -3,7 +3,7 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useMyScore, useUserScore, getRankFromScore, useUpdateScoreSettings } from '@/hooks/useScores';
-import Navbar from '@/components/Navbar';
+import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import RankBadge from '@/components/RankBadge';
 import ScoreCard from '@/components/ScoreCard';
 import { Button } from '@/components/ui/button';
@@ -66,9 +66,9 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-20 pb-12 px-6">
-        <div className="max-w-2xl mx-auto space-y-8">
+      <ResponsiveNavbar />
+      <main className="pt-16 md:pt-20 pb-12 px-4 md:px-6">
+        <div className="max-w-2xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <Link
@@ -92,9 +92,9 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Profile Header */}
-          <div className="glass-card p-8 text-center space-y-4">
-            <div className="w-20 h-20 mx-auto bg-muted border border-border flex items-center justify-center">
-              <span className="text-3xl font-mono font-bold text-muted-foreground">
+          <div className="glass-card p-6 md:p-8 text-center space-y-4">
+            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-muted border border-border flex items-center justify-center">
+              <span className="text-2xl md:text-3xl font-mono font-bold text-muted-foreground">
                 {(profile?.display_name || profile?.username || 'U')[0].toUpperCase()}
               </span>
             </div>
@@ -117,7 +117,7 @@ const Profile: React.FC = () => {
               </div>
             ) : (
               <>
-                <h1 className="text-2xl font-mono font-bold">
+                <h1 className="text-xl md:text-2xl font-mono font-bold">
                   {profile?.display_name || profile?.username || 'Anonymous'}
                 </h1>
                 {profile?.username && (

@@ -12,7 +12,7 @@ import {
   ConnectionType,
 } from '@/hooks/useConnections';
 import { useUserScore, getRankFromScore } from '@/hooks/useScores';
-import Navbar from '@/components/Navbar';
+import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import RankBadge from '@/components/RankBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -178,9 +178,9 @@ const Connections: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pt-20 pb-12 px-6">
-        <div className="max-w-3xl mx-auto space-y-8">
+      <ResponsiveNavbar />
+      <main className="pt-16 md:pt-20 pb-12 px-4 md:px-6">
+        <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <Link
@@ -188,15 +188,15 @@ const Connections: React.FC = () => {
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Link>
           </div>
 
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-mono font-bold uppercase tracking-widest">
+            <h1 className="text-2xl md:text-3xl font-mono font-bold uppercase tracking-widest">
               Connections
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               Accountability through observation. Not conversation.
             </p>
           </div>
