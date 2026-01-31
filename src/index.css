@@ -49,13 +49,20 @@
     --input: 0 0% 12%;
     --ring: 210 15% 45%;
 
-    --radius: 0px;
+    /* Premium rounded corners */
+    --radius: 0.75rem;
 
     /* Custom tokens */
     --glass: 0 0% 8% / 0.8;
     --glow-primary: 210 50% 50% / 0.15;
     --glow-success: 145 50% 40% / 0.2;
     --glow-destructive: 0 60% 45% / 0.2;
+
+    /* Premium shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+    --shadow-glow: 0 0 20px hsl(210 50% 50% / 0.1);
 
     /* Typography */
     --font-mono: 'JetBrains Mono', monospace;
@@ -142,27 +149,80 @@
 }
 
 @layer components {
-  /* Glass card effect */
+  /* Premium glass card effect */
   .glass-card {
-    @apply bg-card border border-border backdrop-blur-sm;
+    @apply bg-card/80 border border-border/50 backdrop-blur-xl rounded-2xl;
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Premium card with subtle glow */
+  .premium-card {
+    @apply bg-card border border-border/40 rounded-2xl overflow-hidden;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+  }
+
+  .premium-card:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+  }
+
+  /* Profile card */
+  .profile-card {
+    @apply relative bg-gradient-to-b from-card to-card/80 border border-border/40 rounded-3xl overflow-hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .profile-card::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent;
+  }
+
+  /* Avatar container */
+  .avatar-premium {
+    @apply relative w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-muted border-2 border-border flex items-center justify-center overflow-hidden;
+    box-shadow: var(--shadow-md);
+  }
+
+  .avatar-premium::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent;
+  }
+
+  /* Status badge */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium;
+  }
+
+  .status-badge-public {
+    @apply bg-success/15 text-success border border-success/30;
+  }
+
+  .status-badge-private {
+    @apply bg-muted text-muted-foreground border border-border;
+  }
+
+  /* Info row */
+  .info-row {
+    @apply flex items-center justify-between py-3 border-b border-border/30 last:border-0;
   }
 
   /* Harsh message box */
   .message-box {
-    @apply border-l-2 border-l-primary pl-4 py-2 bg-card/50;
+    @apply border-l-2 border-l-primary pl-4 py-2 bg-card/50 rounded-r-xl;
   }
 
   /* Status indicators */
   .status-kept {
-    @apply bg-success text-success-foreground;
+    @apply bg-success text-success-foreground rounded-lg;
   }
 
   .status-broken {
-    @apply bg-destructive text-destructive-foreground;
+    @apply bg-destructive text-destructive-foreground rounded-lg;
   }
 
   .status-pending {
-    @apply bg-warning text-warning-foreground;
+    @apply bg-warning text-warning-foreground rounded-lg;
   }
 
   /* Discipline score */
@@ -197,31 +257,37 @@
     box-shadow: 0 0 30px hsl(var(--glow-destructive));
   }
 
-  /* Harsh button style */
+  /* Premium button style */
   .btn-harsh {
-    @apply bg-primary text-primary-foreground px-6 py-3 font-medium uppercase tracking-widest text-sm transition-all duration-200;
+    @apply bg-primary text-primary-foreground px-6 py-3 font-medium uppercase tracking-widest text-sm rounded-xl transition-all duration-200;
+    box-shadow: var(--shadow-md);
   }
 
   .btn-harsh:hover {
-    @apply bg-primary/80;
+    @apply bg-primary/90 scale-[1.02];
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-harsh:active {
+    @apply scale-[0.98];
   }
 
   .btn-harsh:disabled {
-    @apply opacity-50 cursor-not-allowed;
+    @apply opacity-50 cursor-not-allowed scale-100;
   }
 
   /* Outline button */
   .btn-outline-harsh {
-    @apply border border-border text-foreground px-6 py-3 font-medium uppercase tracking-widest text-sm transition-all duration-200 bg-transparent;
+    @apply border border-border text-foreground px-6 py-3 font-medium uppercase tracking-widest text-sm transition-all duration-200 bg-transparent rounded-xl;
   }
 
   .btn-outline-harsh:hover {
-    @apply border-primary text-primary;
+    @apply border-primary text-primary bg-primary/5;
   }
 
   /* Calendar day styles */
   .calendar-day {
-    @apply aspect-square flex items-center justify-center text-sm transition-colors;
+    @apply aspect-square flex items-center justify-center text-sm transition-all duration-200 rounded-lg;
   }
 
   .calendar-day-kept {
@@ -238,6 +304,21 @@
 
   .calendar-day-future {
     @apply text-muted-foreground/50;
+  }
+
+  /* Safe area for bottom nav */
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+
+  /* Lock overlay for private profiles */
+  .private-overlay {
+    @apply relative overflow-hidden rounded-2xl;
+  }
+
+  .private-overlay::after {
+    content: '';
+    @apply absolute inset-0 backdrop-blur-md bg-card/60;
   }
 }
 
