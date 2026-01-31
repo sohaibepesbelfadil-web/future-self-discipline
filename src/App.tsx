@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Promises from "./pages/Promises";
 import Calendar from "./pages/Calendar";
 import Profile from "./pages/Profile";
+import ProfileViewer from "./pages/ProfileViewer";
 import Leaderboard from "./pages/Leaderboard";
 import Connections from "./pages/Connections";
 import Groups from "./pages/Groups";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<Profile />} />
+            <Route path="/u/:username" element={<ProfileViewer />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/connections" element={<Connections />} />
             <Route path="/groups" element={<Groups />} />
