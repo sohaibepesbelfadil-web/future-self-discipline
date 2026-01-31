@@ -161,37 +161,46 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
           commitment_accepted_at: string | null
           created_at: string
           display_name: string | null
           email: string | null
+          gender: string | null
           id: string
           onboarding_completed: boolean | null
           profile_visible: boolean
+          real_name: string | null
           updated_at: string
           user_id: string
           username: string | null
         }
         Insert: {
+          age?: number | null
           commitment_accepted_at?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
+          gender?: string | null
           id?: string
           onboarding_completed?: boolean | null
           profile_visible?: boolean
+          real_name?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
         }
         Update: {
+          age?: number | null
           commitment_accepted_at?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
+          gender?: string | null
           id?: string
           onboarding_completed?: boolean | null
           profile_visible?: boolean
+          real_name?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
