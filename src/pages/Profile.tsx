@@ -4,15 +4,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useMyScore, useUserScore, getRankFromScore, useUpdateScoreSettings } from '@/hooks/useScores';
 import ResponsiveNavbar from '@/components/ResponsiveNavbar';
+import BottomNavbar from '@/components/BottomNavbar';
 import RankBadge from '@/components/RankBadge';
 import ScoreCard from '@/components/ScoreCard';
+import { StaggerContainer, StaggerItem, PremiumCard } from '@/components/PageTransition';
+import { PrivacyToggle } from '@/components/AnimatedToggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { ArrowLeft, Settings, Lock, Unlock, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Settings, Lock, Unlock, ExternalLink, User, Calendar, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Profile: React.FC = () => {
@@ -28,7 +32,6 @@ const Profile: React.FC = () => {
 
   const isOwnProfile = !userId || userId === user?.id;
 
-  // Fetch appropriate data
   const { data: myProfile, isLoading: myProfileLoading } = useProfile();
   const { data: myScore, isLoading: myScoreLoading } = useMyScore();
   const { data: otherScore, isLoading: otherScoreLoading } = useUserScore(userId || '');
@@ -54,7 +57,13 @@ const Profile: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground font-mono">Loading...</div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-muted-foreground font-mono"
+        >
+          Loading...
+        </motion.div>
       </div>
     );
   }
@@ -66,21 +75,13 @@ const Profile: React.FC = () => {
 
   const handleSave = async () => {
     if (!formData.username.trim()) {
-      toast({
-        title: 'Username required',
-        description: 'Please enter a username.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Username required', variant: 'destructive' });
       return;
     }
 
     const age = formData.age ? parseInt(formData.age, 10) : null;
     if (age !== null && (isNaN(age) || age < 13)) {
-      toast({
-        title: 'Invalid age',
-        description: 'Age must be 13 or older.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Age must be 13 or older', variant: 'destructive' });
       return;
     }
 
@@ -92,23 +93,12 @@ const Profile: React.FC = () => {
         age,
       });
       setIsEditing(false);
-      toast({
-        title: 'Profile updated',
-        description: 'Your profile has been saved.',
-      });
+      toast({ title: 'Profile updated' });
     } catch (error: any) {
       if (error.message?.includes('duplicate') || error.code === '23505') {
-        toast({
-          title: 'Username taken',
-          description: 'This username is already in use.',
-          variant: 'destructive',
-        });
+        toast({ title: 'Username taken', variant: 'destructive' });
       } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to update profile.',
-          variant: 'destructive',
-        });
+        toast({ title: 'Failed to update', variant: 'destructive' });
       }
     }
   };
@@ -116,291 +106,317 @@ const Profile: React.FC = () => {
   const handleToggleVisibility = async () => {
     if (!myProfile) return;
     try {
-      await updateProfile.mutateAsync({
-        profile_visible: !myProfile.profile_visible,
-      });
-      toast({
-        title: myProfile.profile_visible ? 'Profile is now private' : 'Profile is now public',
-      });
+      await updateProfile.mutateAsync({ profile_visible: !myProfile.profile_visible });
+      toast({ title: myProfile.profile_visible ? 'Profile is now private' : 'Profile is now public' });
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update visibility.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Failed to update', variant: 'destructive' });
     }
   };
 
   const handleToggleLeaderboard = async () => {
     if (!myScore) return;
-    await updateScoreSettings.mutateAsync({
-      leaderboard_visible: !myScore.leaderboard_visible,
-    });
+    await updateScoreSettings.mutateAsync({ leaderboard_visible: !myScore.leaderboard_visible });
   };
 
   return (
     <div className="min-h-screen bg-background">
       <ResponsiveNavbar />
-      <main className="pt-16 md:pt-20 pb-12 px-4 md:px-6">
-        <div className="max-w-2xl mx-auto space-y-6 md:space-y-8">
+      <main className="pt-16 md:pt-20 pb-24 md:pb-12 px-4 md:px-6">
+        <StaggerContainer className="max-w-2xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Link>
-            {isOwnProfile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-                className="font-mono uppercase tracking-widest text-xs"
+          <StaggerItem>
+            <div className="flex items-center justify-between">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Settings className="w-4 h-4 mr-2" />
-                {isEditing ? 'Cancel' : 'Edit'}
-              </Button>
-            )}
-          </div>
-
-          {/* Profile Header */}
-          <div className="glass-card p-6 md:p-8 text-center space-y-4">
-            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-muted border border-border flex items-center justify-center">
-              <span className="text-2xl md:text-3xl font-mono font-bold text-muted-foreground">
-                {(profile?.real_name || profile?.display_name || profile?.username || 'U')[0].toUpperCase()}
-              </span>
-            </div>
-
-            {isEditing ? (
-              <div className="max-w-sm mx-auto space-y-4 text-left">
-                <div className="space-y-2">
-                  <Label htmlFor="username" className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-                    Username *
-                  </Label>
-                  <Input
-                    id="username"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    placeholder="your_username"
-                    className="font-mono"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="real_name" className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-                    Real Name
-                  </Label>
-                  <Input
-                    id="real_name"
-                    value={formData.real_name}
-                    onChange={(e) => setFormData({ ...formData, real_name: e.target.value })}
-                    placeholder="Your Name"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="gender" className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-                    Gender
-                  </Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value) => setFormData({ ...formData, gender: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="age" className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-                    Age (must be 13+)
-                  </Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    min="13"
-                    value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                    placeholder="18"
-                  />
-                </div>
-
-                <Button
-                  onClick={handleSave}
-                  disabled={updateProfile.isPending}
-                  className="btn-harsh w-full"
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Link>
+              {isOwnProfile && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                 >
-                  {updateProfile.isPending ? 'Saving...' : 'Save Profile'}
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-1">
-                  <h1 className="text-xl md:text-2xl font-mono font-bold">
-                    {profile?.real_name || profile?.display_name || profile?.username || 'Anonymous'}
-                  </h1>
-                  {profile?.username && (
-                    <p className="text-sm text-muted-foreground font-mono">@{profile.username}</p>
-                  )}
-                </div>
+                  {isEditing ? <X className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+                  <span className="text-sm font-medium">{isEditing ? 'Cancel' : 'Edit'}</span>
+                </motion.button>
+              )}
+            </div>
+          </StaggerItem>
 
-                {/* Privacy Status */}
-                <div className="flex items-center justify-center gap-2">
-                  {profile?.profile_visible ? (
-                    <>
-                      <Unlock className="w-3 h-3 text-success" />
-                      <span className="text-xs font-mono text-success">Public Profile</span>
-                    </>
+          {/* Profile Header Card */}
+          <StaggerItem>
+            <motion.div
+              layout
+              className="profile-card p-6 md:p-8"
+            >
+              <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                {/* Avatar */}
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  className="avatar-premium"
+                >
+                  <span className="relative z-10 text-3xl font-mono font-bold text-muted-foreground">
+                    {(profile?.real_name || profile?.display_name || profile?.username || 'U')[0].toUpperCase()}
+                  </span>
+                </motion.div>
+
+                <AnimatePresence mode="wait">
+                  {isEditing ? (
+                    <motion.div
+                      key="edit-form"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="w-full max-w-sm space-y-4 text-left"
+                    >
+                      <div className="space-y-2">
+                        <Label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                          Username *
+                        </Label>
+                        <Input
+                          value={formData.username}
+                          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                          placeholder="your_username"
+                          className="rounded-xl bg-muted/50"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                          Real Name
+                        </Label>
+                        <Input
+                          value={formData.real_name}
+                          onChange={(e) => setFormData({ ...formData, real_name: e.target.value })}
+                          placeholder="Your Name"
+                          className="rounded-xl bg-muted/50"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                            Gender
+                          </Label>
+                          <Select
+                            value={formData.gender}
+                            onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                          >
+                            <SelectTrigger className="rounded-xl bg-muted/50">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="male">Male</SelectItem>
+                              <SelectItem value="female">Female</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                            Age (13+)
+                          </Label>
+                          <Input
+                            type="number"
+                            min="13"
+                            value={formData.age}
+                            onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                            placeholder="18"
+                            className="rounded-xl bg-muted/50"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={handleSave}
+                        disabled={updateProfile.isPending}
+                        className="btn-harsh w-full"
+                      >
+                        {updateProfile.isPending ? 'Saving...' : 'Save Profile'}
+                      </Button>
+                    </motion.div>
                   ) : (
-                    <>
-                      <Lock className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs font-mono text-muted-foreground">Private Profile</span>
-                    </>
-                  )}
-                </div>
+                    <motion.div
+                      key="profile-info"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-3"
+                    >
+                      <div>
+                        <h1 className="text-2xl md:text-3xl font-bold">
+                          {profile?.real_name || profile?.display_name || profile?.username || 'Anonymous'}
+                        </h1>
+                        {profile?.username && (
+                          <p className="text-sm text-muted-foreground font-mono">@{profile.username}</p>
+                        )}
+                      </div>
 
-                {/* View Public Profile Link */}
-                {profile?.username && profile?.profile_visible && (
-                  <Link
-                    to={`/u/${profile.username}`}
-                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-mono"
+                      {/* Privacy Badge */}
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className={`status-badge ${profile?.profile_visible ? 'status-badge-public' : 'status-badge-private'}`}
+                      >
+                        {profile?.profile_visible ? (
+                          <>
+                            <Unlock className="w-3.5 h-3.5" />
+                            <span>Public</span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Private</span>
+                          </>
+                        )}
+                      </motion.div>
+
+                      {/* View Public Link */}
+                      {profile?.username && profile?.profile_visible && (
+                        <Link
+                          to={`/u/${profile.username}`}
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          View public profile <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      )}
+
+                      {/* Info Grid */}
+                      <div className="pt-4 border-t border-border/30 grid grid-cols-2 gap-4 text-sm">
+                        {profile?.gender && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <User className="w-4 h-4" />
+                            <span className="capitalize">{profile.gender}</span>
+                          </div>
+                        )}
+                        {profile?.age && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <span className="text-lg">🎂</span>
+                            <span>{profile.age} years</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>Joined {profile?.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : 'Unknown'}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {score && !isEditing && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
                   >
-                    View public profile <ExternalLink className="w-3 h-3" />
-                  </Link>
+                    <RankBadge score={score.discipline_score} size="lg" showScore />
+                  </motion.div>
                 )}
-
-                {/* Profile Details */}
-                <div className="pt-4 border-t border-border space-y-2 text-sm">
-                  {profile?.gender && (
-                    <div className="flex justify-between text-muted-foreground">
-                      <span className="font-mono uppercase tracking-widest text-xs">Gender</span>
-                      <span className="capitalize">{profile.gender}</span>
-                    </div>
-                  )}
-                  {profile?.age && (
-                    <div className="flex justify-between text-muted-foreground">
-                      <span className="font-mono uppercase tracking-widest text-xs">Age</span>
-                      <span>{profile.age}</span>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            {score && !isEditing && <RankBadge score={score.discipline_score} size="lg" showScore />}
-
-            <p className="text-xs text-muted-foreground font-mono">
-              Member since {profile?.created_at ? format(new Date(profile.created_at), 'MMMM yyyy') : 'Unknown'}
-            </p>
-          </div>
+              </div>
+            </motion.div>
+          </StaggerItem>
 
           {/* Score Card */}
           {score && !isEditing && (
-            <ScoreCard
-              score={score.discipline_score}
-              keptCount={score.promises_kept}
-              brokenCount={score.promises_broken}
-              consistency={Number(score.consistency_percentage)}
-              currentStreak={score.current_streak}
-              longestStreak={score.longest_streak}
-            />
+            <StaggerItem>
+              <PremiumCard className="p-6">
+                <ScoreCard
+                  score={score.discipline_score}
+                  keptCount={score.promises_kept}
+                  brokenCount={score.promises_broken}
+                  consistency={Number(score.consistency_percentage)}
+                  currentStreak={score.current_streak}
+                  longestStreak={score.longest_streak}
+                />
+              </PremiumCard>
+            </StaggerItem>
           )}
 
-          {/* Privacy & Visibility Settings (own profile only) */}
+          {/* Privacy Settings */}
           {isOwnProfile && myProfile && (
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="font-mono uppercase tracking-widest text-sm text-muted-foreground">
-                Privacy Settings
-              </h3>
-              
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <div>
-                  <p className="text-sm font-medium flex items-center gap-2">
-                    {myProfile.profile_visible ? (
-                      <Unlock className="w-4 h-4 text-success" />
-                    ) : (
-                      <Lock className="w-4 h-4 text-muted-foreground" />
-                    )}
-                    Profile Visibility
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {myProfile.profile_visible
-                      ? 'Anyone can view your profile at /u/' + (myProfile.username || 'username')
-                      : 'Only you can see your full profile'}
-                  </p>
-                </div>
-                <Switch
-                  checked={myProfile.profile_visible}
-                  onCheckedChange={handleToggleVisibility}
+            <StaggerItem>
+              <PremiumCard className="p-6 space-y-4">
+                <h3 className="font-mono uppercase tracking-widest text-sm text-muted-foreground">
+                  Privacy Settings
+                </h3>
+
+                <PrivacyToggle
+                  isPublic={myProfile.profile_visible}
+                  onToggle={handleToggleVisibility}
                   disabled={updateProfile.isPending}
                 />
-              </div>
 
-              {myScore && (
-                <div className="flex items-center justify-between py-2">
-                  <div>
-                    <p className="text-sm font-medium">Show on Leaderboard</p>
-                    <p className="text-xs text-muted-foreground">
-                      Allow others to see your rank on the public leaderboard
-                    </p>
+                {myScore && (
+                  <div className="flex items-center justify-between py-3 border-t border-border/30">
+                    <div>
+                      <p className="text-sm font-medium">Leaderboard Visibility</p>
+                      <p className="text-xs text-muted-foreground">Show on public rankings</p>
+                    </div>
+                    <Switch
+                      checked={myScore.leaderboard_visible}
+                      onCheckedChange={handleToggleLeaderboard}
+                      disabled={updateScoreSettings.isPending}
+                    />
                   </div>
-                  <Switch
-                    checked={myScore.leaderboard_visible}
-                    onCheckedChange={handleToggleLeaderboard}
-                    disabled={updateScoreSettings.isPending}
-                  />
-                </div>
-              )}
-            </div>
+                )}
+              </PremiumCard>
+            </StaggerItem>
           )}
 
           {/* Rank Progression */}
           {!isEditing && (
-            <div className="glass-card p-6">
-              <h3 className="font-mono uppercase tracking-widest text-sm text-muted-foreground mb-4">
-                Rank Progression
-              </h3>
-              <div className="space-y-2">
-                {['Observer', 'Builder', 'Disciplined', 'Relentless', 'Unbreakable'].map((rank, i) => {
-                  const thresholds = [0, 100, 300, 700, 1500];
-                  const currentRank = score ? getRankFromScore(score.discipline_score) : 'Observer';
-                  const isCurrentRank = rank === currentRank;
-                  const isAchieved = thresholds.findIndex(t => t === thresholds[i]) <= 
-                    thresholds.findIndex(t => t === thresholds[['Observer', 'Builder', 'Disciplined', 'Relentless', 'Unbreakable'].indexOf(currentRank)]);
+            <StaggerItem>
+              <PremiumCard className="p-6">
+                <h3 className="font-mono uppercase tracking-widest text-sm text-muted-foreground mb-4">
+                  Rank Progression
+                </h3>
+                <div className="space-y-2">
+                  {['Observer', 'Builder', 'Disciplined', 'Relentless', 'Unbreakable'].map((rank, i) => {
+                    const thresholds = [0, 100, 300, 700, 1500];
+                    const currentRank = score ? getRankFromScore(score.discipline_score) : 'Observer';
+                    const isCurrentRank = rank === currentRank;
+                    const rankIndex = ['Observer', 'Builder', 'Disciplined', 'Relentless', 'Unbreakable'].indexOf(currentRank);
+                    const isAchieved = i <= rankIndex;
 
-                  return (
-                    <div
-                      key={rank}
-                      className={`flex items-center justify-between p-3 border ${
-                        isCurrentRank
-                          ? 'border-primary bg-primary/10'
-                          : isAchieved
-                          ? 'border-success/30 bg-success/5'
-                          : 'border-border'
-                      }`}
-                    >
-                      <span className={`font-mono text-sm ${isCurrentRank ? 'text-primary' : isAchieved ? 'text-success' : 'text-muted-foreground'}`}>
-                        {rank}
-                      </span>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {thresholds[i]}+ pts
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                    return (
+                      <motion.div
+                        key={rank}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                          isCurrentRank
+                            ? 'border-primary bg-primary/10'
+                            : isAchieved
+                            ? 'border-success/30 bg-success/5'
+                            : 'border-border/30 bg-muted/30'
+                        }`}
+                      >
+                        <span className={`font-mono text-sm ${
+                          isCurrentRank ? 'text-primary font-semibold' : isAchieved ? 'text-success' : 'text-muted-foreground'
+                        }`}>
+                          {rank}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {thresholds[i]}+ pts
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </PremiumCard>
+            </StaggerItem>
           )}
-        </div>
+        </StaggerContainer>
       </main>
+      <BottomNavbar />
     </div>
   );
 };
