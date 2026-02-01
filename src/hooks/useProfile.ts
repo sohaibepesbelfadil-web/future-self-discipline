@@ -11,6 +11,7 @@ export interface Profile {
   real_name: string | null;
   gender: string | null;
   age: number | null;
+  avatar_url: string | null;
   profile_visible: boolean;
   onboarding_completed: boolean;
   commitment_accepted_at: string | null;

@@ -50,11 +50,15 @@ const Dashboard: React.FC = () => {
                     <div className="flex items-center gap-4 md:gap-6">
                       <motion.div
                         whileHover={{ scale: 1.05 }}
-                        className="avatar-premium w-14 h-14 md:w-16 md:h-16"
+                        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden border-2 border-border flex items-center justify-center bg-muted"
                       >
-                        <span className="relative z-10 text-xl md:text-2xl font-mono font-bold text-muted-foreground">
-                          {(profile?.real_name || profile?.display_name || profile?.username || 'U')[0].toUpperCase()}
-                        </span>
+                        {profile?.avatar_url ? (
+                          <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xl md:text-2xl font-mono font-bold text-muted-foreground">
+                            {(profile?.real_name || profile?.display_name || profile?.username || 'U')[0].toUpperCase()}
+                          </span>
+                        )}
                       </motion.div>
                       <div>
                         <p className="font-semibold text-base md:text-lg">

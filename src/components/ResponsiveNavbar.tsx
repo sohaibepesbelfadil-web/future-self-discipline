@@ -6,11 +6,15 @@ import MobileNavbar from './MobileNavbar';
 const ResponsiveNavbar: React.FC = () => {
   const isMobile = useIsMobile();
 
-  // Show mobile navbar for mobile, desktop navbar otherwise
-  // useIsMobile returns undefined initially, so we render both and hide via CSS for smooth transition
+  // Mobile: show only mobile navbar (hidden on md+)
+  // Desktop: show only desktop navbar (visible on md+)
   return (
     <>
-      <MobileNavbar />
+      {/* Mobile navbar - shown only on small screens */}
+      <div className="md:hidden">
+        <MobileNavbar />
+      </div>
+      {/* Desktop navbar - shown only on medium+ screens */}
       <div className="hidden md:block">
         <Navbar />
       </div>

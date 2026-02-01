@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
+import { useProfile, useUpdateProfile, Profile as ProfileType } from '@/hooks/useProfile';
 import { useMyScore, useUserScore, getRankFromScore, useUpdateScoreSettings } from '@/hooks/useScores';
 import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import BottomNavbar from '@/components/BottomNavbar';
@@ -14,15 +14,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Settings, Lock, Unlock, ExternalLink, User, Calendar, X } from 'lucide-react';
+import { ArrowLeft, Settings, Lock, Unlock, ExternalLink, User, Calendar, X, Camera } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Profile: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>();
   const { user, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = React.useState({
     username: '',
     real_name: '',
@@ -53,6 +56,48 @@ const Profile: React.FC = () => {
       });
     }
   }, [myProfile]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Please select an image file', variant: 'destructive' });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image must be less than 5MB', variant: 'destructive' });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Add cache buster to force refresh
+      const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+      
+      await updateProfile.mutateAsync({ avatar_url: avatarUrl });
+      toast({ title: 'Profile picture updated' });
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      toast({ title: 'Failed to upload image', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -118,6 +163,32 @@ const Profile: React.FC = () => {
     await updateScoreSettings.mutateAsync({ leaderboard_visible: !myScore.leaderboard_visible });
   };
 
+  const renderAvatar = (profileData: ProfileType | null | undefined, size: 'sm' | 'md' | 'lg' = 'md') => {
+    const sizeClasses = {
+      sm: 'w-10 h-10 text-lg',
+      md: 'w-20 h-20 md:w-24 md:h-24 text-3xl',
+      lg: 'w-24 h-24 md:w-32 md:h-32 text-4xl',
+    };
+
+    if (profileData?.avatar_url) {
+      return (
+        <img 
+          src={profileData.avatar_url} 
+          alt="Profile" 
+          className={`${sizeClasses[size]} rounded-2xl object-cover border-2 border-border`}
+        />
+      );
+    }
+
+    return (
+      <div className={`avatar-premium ${sizeClasses[size]}`}>
+        <span className="relative z-10 font-mono font-bold text-muted-foreground">
+          {(profileData?.real_name || profileData?.display_name || profileData?.username || 'U')[0].toUpperCase()}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <ResponsiveNavbar />
@@ -154,16 +225,35 @@ const Profile: React.FC = () => {
               className="profile-card p-6 md:p-8"
             >
               <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-                {/* Avatar */}
+                {/* Avatar with upload capability */}
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="avatar-premium"
+                  className="relative"
                 >
-                  <span className="relative z-10 text-3xl font-mono font-bold text-muted-foreground">
-                    {(profile?.real_name || profile?.display_name || profile?.username || 'U')[0].toUpperCase()}
-                  </span>
+                  {renderAvatar(profile, 'md')}
+                  
+                  {isOwnProfile && (
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      >
+                        <Camera className="w-4 h-4 text-primary-foreground" />
+                      </motion.button>
+                    </>
+                  )}
                 </motion.div>
 
                 <AnimatePresence mode="wait">
@@ -297,8 +387,7 @@ const Profile: React.FC = () => {
                         )}
                         {profile?.age && (
                           <div className="flex items-center gap-2 text-muted-foreground">
-                            <span className="text-lg">🎂</span>
-                            <span>{profile.age} years</span>
+                            <span className="font-mono text-sm">{profile.age} years</span>
                           </div>
                         )}
                         <div className="flex items-center gap-2 text-muted-foreground col-span-2">
