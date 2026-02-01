@@ -13,6 +13,7 @@ const Auth: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { signIn, signUp, user } = useAuth();
@@ -27,6 +28,7 @@ const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
@@ -65,6 +67,8 @@ const Auth: React.FC = () => {
           } else {
             setError(error.message);
           }
+        } else {
+          setSuccess('Account created! Please check your email to verify your account before signing in.');
         }
       }
     } catch (err) {
@@ -166,6 +170,19 @@ const Auth: React.FC = () => {
               )}
             </AnimatePresence>
 
+            <AnimatePresence mode="wait">
+              {success && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="p-4 rounded-xl border border-success/50 bg-success/10 text-success text-sm"
+                >
+                  {success}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <motion.button
               type="submit"
               disabled={loading}
@@ -182,6 +199,7 @@ const Auth: React.FC = () => {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
+                setSuccess('');
               }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >

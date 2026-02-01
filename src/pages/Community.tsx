@@ -142,13 +142,17 @@ const Community: React.FC = () => {
                                   navigate(`/u/${post.profile.username}`);
                                 }
                               }}
-                              className={`w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ${
+                              className={`w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ${
                                 post.profile?.username ? 'cursor-pointer' : ''
                               }`}
                             >
-                              <span className="text-sm font-semibold text-primary">
-                                {username.slice(0, 2).toUpperCase()}
-                              </span>
+                              {post.profile?.avatar_url ? (
+                                <img src={post.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-sm font-semibold text-primary">
+                                  {username.slice(0, 2).toUpperCase()}
+                                </span>
+                              )}
                             </motion.div>
                             <div>
                               <button
