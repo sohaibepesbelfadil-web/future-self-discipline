@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Search, User, Settings, Target, Trophy } from 'lucide-react';
+import { Home, FileText, CalendarCheck, Users, User } from 'lucide-react';
 
 interface NavItem {
   icon: React.ElementType;
@@ -11,8 +11,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { icon: Home, label: 'Home', path: '/dashboard' },
-  { icon: Target, label: 'Promises', path: '/promises' },
-  { icon: Trophy, label: 'Ranks', path: '/leaderboard' },
+  { icon: FileText, label: 'Notes', path: '/notes' },
+  { icon: CalendarCheck, label: 'Tasks', path: '/tasks' },
+  { icon: Users, label: 'Community', path: '/community' },
   { icon: User, label: 'Profile', path: '/profile' },
 ];
 
