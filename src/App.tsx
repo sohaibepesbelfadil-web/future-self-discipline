@@ -16,6 +16,9 @@ import Leaderboard from "./pages/Leaderboard";
 import Connections from "./pages/Connections";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
+import Notes from "./pages/Notes";
+import Tasks from "./pages/Tasks";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,9 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/promises" element={<Promises />} />
             <Route path="/calendar" element={<Calendar />} />
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/community" element={<Community />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/u/:username" element={<ProfileViewer />} />
