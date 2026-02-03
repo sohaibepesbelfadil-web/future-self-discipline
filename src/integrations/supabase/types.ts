@@ -19,18 +19,21 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_url: string | null
           user_id: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           user_id: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           user_id?: string
         }
         Relationships: []
@@ -218,8 +221,11 @@ export type Database = {
           gender: string | null
           id: string
           onboarding_completed: boolean | null
+          privacy_accepted_at: string | null
           profile_visible: boolean
+          qcm_responses: Json | null
           real_name: string | null
+          terms_accepted_at: string | null
           updated_at: string
           user_id: string
           username: string | null
@@ -234,8 +240,11 @@ export type Database = {
           gender?: string | null
           id?: string
           onboarding_completed?: boolean | null
+          privacy_accepted_at?: string | null
           profile_visible?: boolean
+          qcm_responses?: Json | null
           real_name?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -250,8 +259,11 @@ export type Database = {
           gender?: string | null
           id?: string
           onboarding_completed?: boolean | null
+          privacy_accepted_at?: string | null
           profile_visible?: boolean
+          qcm_responses?: Json | null
           real_name?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
@@ -289,6 +301,39 @@ export type Database = {
           is_active?: boolean | null
           start_date?: string
           title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          status?: string
+          subject?: string
           updated_at?: string
           user_id?: string
         }

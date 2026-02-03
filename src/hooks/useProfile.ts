@@ -15,6 +15,9 @@ export interface Profile {
   profile_visible: boolean;
   onboarding_completed: boolean;
   commitment_accepted_at: string | null;
+  terms_accepted_at: string | null;
+  privacy_accepted_at: string | null;
+  qcm_responses: Record<string, string[]> | null;
   created_at: string;
   updated_at: string;
 }

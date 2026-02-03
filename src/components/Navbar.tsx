@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Trophy, Users, UserCircle, LogOut, ChevronDown, FileText, CalendarCheck, MessageSquare, Home, FileCheck, Calendar } from 'lucide-react';
+import { User, Trophy, Users, UserCircle, LogOut, ChevronDown, FileText, CalendarCheck, MessageSquare, Home, FileCheck, Calendar, Settings, HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Navbar: React.FC = () => {
@@ -116,8 +116,19 @@ const Navbar: React.FC = () => {
             </DropdownMenu>
           </div>
 
-          {/* Profile & Sign out */}
-          <div className="flex items-center gap-3">
+          {/* Profile & Settings */}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/settings"
+              className={`p-2 rounded-xl transition-colors ${
+                isActive('/settings') || isActive('/support')
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
             <Link
               to="/profile"
               className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${

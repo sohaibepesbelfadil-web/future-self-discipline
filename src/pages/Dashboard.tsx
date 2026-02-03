@@ -10,6 +10,7 @@ import StatsSection from '@/components/StatsSection';
 import ProgressGraph from '@/components/ProgressGraph';
 import CalendarPreview from '@/components/CalendarPreview';
 import RankBadge from '@/components/RankBadge';
+import StreakDisplay from '@/components/StreakDisplay';
 import { StaggerContainer, StaggerItem, PremiumCard } from '@/components/PageTransition';
 import { motion } from 'framer-motion';
 import { Trophy, Users, UserCircle, ChevronRight } from 'lucide-react';
@@ -104,6 +105,17 @@ const Dashboard: React.FC = () => {
           <StaggerItem>
             <FutureMessage />
           </StaggerItem>
+
+          {/* Streak Display */}
+          {myScore && (
+            <StaggerItem>
+              <StreakDisplay
+                currentStreak={myScore.current_streak}
+                longestStreak={myScore.longest_streak}
+                variant="full"
+              />
+            </StaggerItem>
+          )}
 
           <StaggerItem>
             <StatsSection />
