@@ -8,7 +8,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { Menu, User, Trophy, Users, UserCircle, LogOut, Calendar, LayoutDashboard, FileCheck, FileText, CalendarCheck, MessageSquare } from 'lucide-react';
+import { Menu, User, Trophy, Users, UserCircle, LogOut, Calendar, LayoutDashboard, FileCheck, FileText, CalendarCheck, MessageSquare, Settings, HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const MobileNavbar: React.FC = () => {
@@ -32,6 +32,11 @@ const MobileNavbar: React.FC = () => {
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/connections', label: 'Connections', icon: Users },
     { path: '/groups', label: 'Groups', icon: UserCircle },
+  ];
+
+  const settingsItems = [
+    { path: '/settings', label: 'Settings', icon: Settings },
+    { path: '/support', label: 'Help & Support', icon: HelpCircle },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -130,6 +135,27 @@ const MobileNavbar: React.FC = () => {
                     </span>
                   </div>
                   {socialItems.map((item) => (
+                    <SheetClose asChild key={item.path}>
+                      <Link
+                        to={item.path}
+                        className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${
+                          isActive(item.path)
+                            ? 'text-primary bg-primary/10'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}
+                      >
+                        <item.icon className="w-4 h-4" />
+                        {item.label}
+                      </Link>
+                    </SheetClose>
+                  ))}
+
+                  <div className="px-4 mt-6 mb-2">
+                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
+                      Settings
+                    </span>
+                  </div>
+                  {settingsItems.map((item) => (
                     <SheetClose asChild key={item.path}>
                       <Link
                         to={item.path}

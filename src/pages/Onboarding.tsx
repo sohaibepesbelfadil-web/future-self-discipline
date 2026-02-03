@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCompleteOnboarding, useUpdateProfile } from '@/hooks/useProfile';
+import { useCompleteOnboarding, useUpdateProfile, useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { Shield, Target, Users, Check, ChevronRight, ChevronLeft } from 'lucide-react';
 import ProfileSetupForm from '@/components/ProfileSetupForm';
+import LegalDocuments from '@/components/LegalDocuments';
+import QCMOnboarding from '@/components/QCMOnboarding';
 
 const Onboarding: React.FC = () => {
   const [step, setStep] = useState(0);
@@ -14,15 +17,48 @@ const Onboarding: React.FC = () => {
     consequences: false,
   });
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { data: profile, isLoading: profileLoading } = useProfile();
   const completeOnboarding = useCompleteOnboarding();
   const updateProfile = useUpdateProfile();
 
+  // Redirect if already completed onboarding
+  if (!authLoading && !profileLoading) {
+    if (!user) return <Navigate to="/auth" replace />;
+    if (profile?.onboarding_completed) return <Navigate to="/dashboard" replace />;
+  }
+
   const allAccepted = Object.values(acceptances).every(Boolean);
+
+  const handleLegalAccept = async () => {
+    try {
+      await updateProfile.mutateAsync({
+        terms_accepted_at: new Date().toISOString(),
+        privacy_accepted_at: new Date().toISOString(),
+      } as any);
+      setStep(1);
+    } catch (error) {
+      console.error('Failed to save legal acceptance:', error);
+      setStep(1); // Continue anyway, we'll save this with profile
+    }
+  };
+
+  const handleQCMComplete = async (responses: Record<string, string[]>) => {
+    try {
+      await updateProfile.mutateAsync({
+        qcm_responses: responses,
+      } as any);
+      setStep(2);
+    } catch (error) {
+      console.error('Failed to save QCM responses:', error);
+      setStep(2); // Continue anyway
+    }
+  };
 
   const handleProfileComplete = async (profileData: { username: string; real_name: string; gender: string; age: number; avatar_url?: string }) => {
     try {
       await updateProfile.mutateAsync(profileData);
-      setStep(3);
+      setStep(4);
     } catch (error: any) {
       console.error('Failed to save profile:', error);
     }
@@ -70,8 +106,25 @@ const Onboarding: React.FC = () => {
     }
   ];
 
+  const totalSteps = 6;
+
   const screens = [
-    // Screen 0: Feature Tour
+    // Screen 0: Legal Documents
+    <LegalDocuments 
+      key="legal"
+      onAccept={handleLegalAccept}
+      isLoading={updateProfile.isPending}
+    />,
+
+    // Screen 1: QCM Questions
+    <QCMOnboarding
+      key="qcm"
+      onComplete={handleQCMComplete}
+      onBack={() => setStep(0)}
+      isLoading={updateProfile.isPending}
+    />,
+
+    // Screen 2: Feature Tour
     <motion.div key="features" className="max-w-lg mx-auto text-center">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -107,7 +160,7 @@ const Onboarding: React.FC = () => {
       </div>
 
       <motion.button
-        onClick={() => setStep(1)}
+        onClick={() => setStep(3)}
         className="btn-harsh group flex items-center gap-2 mx-auto"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -120,7 +173,7 @@ const Onboarding: React.FC = () => {
       </motion.button>
     </motion.div>,
 
-    // Screen 1: The Rules
+    // Screen 3: The Rules
     <motion.div key="rules" className="max-w-lg mx-auto">
       <div className="mb-8 text-center">
         <span className="text-xs font-mono text-primary tracking-widest uppercase mb-2 block">
@@ -171,7 +224,7 @@ const Onboarding: React.FC = () => {
 
       <div className="flex gap-3">
         <motion.button
-          onClick={() => setStep(0)}
+          onClick={() => setStep(2)}
           className="btn-outline-harsh flex items-center gap-2"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -180,7 +233,7 @@ const Onboarding: React.FC = () => {
           Back
         </motion.button>
         <motion.button
-          onClick={() => setStep(2)}
+          onClick={() => setStep(4)}
           className="btn-harsh flex-1 group flex items-center justify-center gap-2"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -191,7 +244,7 @@ const Onboarding: React.FC = () => {
       </div>
     </motion.div>,
 
-    // Screen 2: Profile Setup
+    // Screen 4: Profile Setup
     <motion.div key="profile" className="max-w-lg mx-auto">
       <div className="mb-8 text-center">
         <span className="text-xs font-mono text-primary tracking-widest uppercase mb-2 block">
@@ -207,12 +260,12 @@ const Onboarding: React.FC = () => {
 
       <ProfileSetupForm 
         onComplete={handleProfileComplete}
-        onBack={() => setStep(1)}
+        onBack={() => setStep(3)}
         isLoading={updateProfile.isPending}
       />
     </motion.div>,
 
-    // Screen 3: Commitment Contract
+    // Screen 5: Commitment Contract
     <motion.div key="commitment" className="max-w-lg mx-auto">
       <div className="mb-8 text-center">
         <span className="text-xs font-mono text-primary tracking-widest uppercase mb-2 block">
@@ -284,7 +337,7 @@ const Onboarding: React.FC = () => {
 
       <div className="flex gap-3">
         <motion.button
-          onClick={() => setStep(2)}
+          onClick={() => setStep(4)}
           className="btn-outline-harsh flex items-center gap-2"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -305,6 +358,16 @@ const Onboarding: React.FC = () => {
     </motion.div>,
   ];
 
+  if (authLoading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-muted-foreground font-mono">
+          Loading...
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Background gradient */}
@@ -317,14 +380,14 @@ const Onboarding: React.FC = () => {
         <motion.div
           className="h-full bg-primary"
           initial={{ width: 0 }}
-          animate={{ width: `${((step + 1) / 4) * 100}%` }}
+          animate={{ width: `${((step + 1) / totalSteps) * 100}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         />
       </div>
 
       {/* Progress dots */}
       <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex gap-2">
-        {[0, 1, 2, 3].map((i) => (
+        {Array.from({ length: totalSteps }).map((_, i) => (
           <motion.div
             key={i}
             className={`w-2 h-2 rounded-full transition-colors ${
@@ -355,7 +418,7 @@ const Onboarding: React.FC = () => {
 
       {/* Step counter */}
       <div className="fixed bottom-6 right-6 font-mono text-xs text-muted-foreground z-50">
-        {step + 1} / 4
+        {step + 1} / {totalSteps}
       </div>
     </div>
   );

@@ -19,6 +19,8 @@ import GroupDetail from "./pages/GroupDetail";
 import Notes from "./pages/Notes";
 import Tasks from "./pages/Tasks";
 import Community from "./pages/Community";
+import Settings from "./pages/Settings";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +49,8 @@ const App = () => (
             <Route path="/connections" element={<Connections />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/:groupId" element={<GroupDetail />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/support" element={<Support />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

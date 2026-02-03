@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, FileText, CalendarCheck, Users, User } from 'lucide-react';
+import { Home, FileText, CalendarCheck, Users, Settings } from 'lucide-react';
 
 interface NavItem {
   icon: React.ElementType;
@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
   { icon: FileText, label: 'Notes', path: '/notes' },
   { icon: CalendarCheck, label: 'Tasks', path: '/tasks' },
   { icon: Users, label: 'Community', path: '/community' },
-  { icon: User, label: 'Profile', path: '/profile' },
+  { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
 const BottomNavbar: React.FC = () => {
@@ -22,8 +22,8 @@ const BottomNavbar: React.FC = () => {
   const navigate = useNavigate();
 
   const isActive = (path: string) => {
-    if (path === '/profile') {
-      return location.pathname === '/profile' || location.pathname.startsWith('/u/');
+    if (path === '/settings') {
+      return location.pathname === '/settings' || location.pathname === '/support' || location.pathname === '/profile' || location.pathname.startsWith('/u/');
     }
     return location.pathname === path;
   };

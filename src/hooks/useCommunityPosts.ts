@@ -7,6 +7,7 @@ export interface CommunityPost {
   id: string;
   user_id: string;
   content: string;
+  image_url: string | null;
   created_at: string;
   profile?: {
     username: string | null;
@@ -55,12 +56,16 @@ export const useCreateCommunityPost = () => {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({ content, image_url }: { content: string; image_url?: string | null }) => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
         .from('community_posts')
-        .insert({ user_id: user.id, content })
+        .insert({ 
+          user_id: user.id, 
+          content,
+          image_url: image_url || null,
+        })
         .select()
         .single();
       
