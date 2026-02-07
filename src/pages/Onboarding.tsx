@@ -4,9 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCompleteOnboarding, useUpdateProfile, useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shield, Target, Users, Check, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import ProfileSetupForm from '@/components/ProfileSetupForm';
 import LegalDocuments from '@/components/LegalDocuments';
 import QCMOnboarding from '@/components/QCMOnboarding';
+import MobileOnboarding from '@/components/MobileOnboarding';
 
 const Onboarding: React.FC = () => {
   const [step, setStep] = useState(0);
@@ -17,6 +19,7 @@ const Onboarding: React.FC = () => {
     consequences: false,
   });
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { user, loading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const completeOnboarding = useCompleteOnboarding();
@@ -26,6 +29,11 @@ const Onboarding: React.FC = () => {
   if (!authLoading && !profileLoading) {
     if (!user) return <Navigate to="/auth" replace />;
     if (profile?.onboarding_completed) return <Navigate to="/dashboard" replace />;
+  }
+
+  // Use mobile-specific onboarding for mobile devices
+  if (isMobile) {
+    return <MobileOnboarding />;
   }
 
   const allAccepted = Object.values(acceptances).every(Boolean);
