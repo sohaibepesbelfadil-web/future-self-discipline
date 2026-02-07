@@ -311,6 +311,16 @@
     padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
   }
 
+  /* Safe area for top content */
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 0.75rem);
+  }
+
+  /* Top safe area utility */
+  .top-safe {
+    top: env(safe-area-inset-top);
+  }
+
   /* Lock overlay for private profiles */
   .private-overlay {
     @apply relative overflow-hidden rounded-2xl;

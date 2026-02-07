@@ -2,9 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Shield, Target, Users, Zap } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileWelcome from '@/components/MobileWelcome';
 
 const Index = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const features = [
     {
@@ -23,6 +26,11 @@ const Index = () => {
       description: 'Connect with others on the same path'
     }
   ];
+
+  // Mobile-specific welcome flow
+  if (isMobile) {
+    return <MobileWelcome onComplete={() => navigate('/auth')} />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-hidden">
