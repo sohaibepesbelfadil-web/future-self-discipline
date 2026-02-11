@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { validateUsername } from '@/lib/usernameFilter';
 
 interface MobileProfileSetupProps {
   onComplete: (data: { username: string; real_name: string; gender: string; age: number; avatar_url?: string }) => void;
@@ -33,12 +34,9 @@ const MobileProfileSetup: React.FC<MobileProfileSetupProps> = ({ onComplete, onB
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Min 3 characters';
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username = 'Letters, numbers, underscores only';
+    const usernameCheck = validateUsername(formData.username);
+    if (!usernameCheck.valid) {
+      newErrors.username = usernameCheck.error!;
     }
 
     if (!formData.real_name.trim()) {

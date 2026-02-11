@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Clock, Calendar as CalendarIcon } from 'lucide-react';
+import { X, Trash2, Clock, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Task } from '@/hooks/useTasks';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,7 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
   const [endTime, setEndTime] = useState('10:00');
   const [color, setColor] = useState(TASK_COLORS[0]);
   const [errors, setErrors] = useState<{ title?: string; time?: string }>({});
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -60,26 +61,41 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
       setColor(TASK_COLORS[0]);
     }
     setErrors({});
+    setShowDeleteConfirm(false);
   }, [task, defaultDate, isOpen]);
+
+  // Prevent background scroll when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  // ESC key to close
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, handleKeyDown]);
 
   const validate = (): boolean => {
     const newErrors: { title?: string; time?: string } = {};
-    
-    if (!title.trim()) {
-      newErrors.title = 'Title is required';
-    }
-    
-    if (startTime >= endTime) {
-      newErrors.time = 'End time must be after start time';
-    }
-    
+    if (!title.trim()) newErrors.title = 'Title is required';
+    if (startTime >= endTime) newErrors.time = 'End time must be after start time';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     if (!validate()) return;
-    
     onSave({
       title: title.trim(),
       description: description.trim() || undefined,
@@ -90,17 +106,28 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
     });
   };
 
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (task && onDelete) {
+      onDelete(task.id);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop with blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           
           {/* Dialog */}
@@ -108,49 +135,57 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-md z-50"
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto z-[101] bg-card border border-border rounded-2xl shadow-2xl"
           >
-            <div className="bg-card border border-border rounded-2xl shadow-xl overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h2 className="text-lg font-semibold">
-                  {task ? 'Edit Task' : 'New Task'}
-                </h2>
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+            {/* Header */}
+            <div className="sticky top-0 bg-card/95 backdrop-blur-sm flex items-center justify-between p-4 border-b border-border z-10">
+              <h2 className="text-lg font-semibold">
+                {task ? 'Edit Task' : 'New Task'}
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                className="p-2 rounded-xl hover:bg-muted transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </motion.button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-4 space-y-4">
+              {/* Title */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Title</label>
+                <Input
+                  placeholder="Task title..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={cn("bg-background/50", errors.title && "border-destructive")}
+                  autoFocus
+                />
+                {errors.title && (
+                  <p className="text-xs text-destructive mt-1">{errors.title}</p>
+                )}
               </div>
               
-              {/* Content */}
-              <div className="p-4 space-y-4">
-                {/* Title */}
-                <div>
-                  <Input
-                    placeholder="Task title..."
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className={cn("bg-background/50", errors.title && "border-destructive")}
-                    autoFocus
-                  />
-                  {errors.title && (
-                    <p className="text-xs text-destructive mt-1">{errors.title}</p>
-                  )}
-                </div>
-                
-                {/* Description */}
+              {/* Description */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Description</label>
                 <Textarea
-                  placeholder="Description (optional)..."
+                  placeholder="Add details..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="bg-background/50 min-h-[80px]"
+                  className="bg-background/50 min-h-[80px] resize-none"
                 />
-                
-                {/* Date */}
+              </div>
+              
+              {/* Date */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Date</label>
                 <div className="flex items-center gap-2">
-                  <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                  <CalendarIcon className="w-4 h-4 text-muted-foreground shrink-0" />
                   <Input
                     type="date"
                     value={taskDate}
@@ -158,58 +193,93 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
                     className="bg-background/50 flex-1"
                   />
                 </div>
-                
-                {/* Time */}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <Input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="bg-background/50 flex-1"
-                    />
-                    <span className="text-muted-foreground">to</span>
-                    <Input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="bg-background/50 flex-1"
-                    />
-                  </div>
-                  {errors.time && (
-                    <p className="text-xs text-destructive mt-1">{errors.time}</p>
-                  )}
-                </div>
-                
-                {/* Color picker */}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Color</label>
-                  <div className="flex gap-2">
-                    {TASK_COLORS.map((c) => (
-                      <motion.button
-                        key={c}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setColor(c)}
-                        className={cn(
-                          "w-8 h-8 rounded-full transition-all",
-                          color === c && "ring-2 ring-offset-2 ring-offset-background"
-                        )}
-                        style={{ backgroundColor: c, outlineColor: color === c ? c : undefined }}
-                      />
-                    ))}
-                  </div>
-                </div>
               </div>
               
-              {/* Footer */}
-              <div className="flex items-center justify-between p-4 border-t border-border bg-muted/30">
-                {task && onDelete ? (
+              {/* Time */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Time</label>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <Input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="bg-background/50 flex-1"
+                  />
+                  <span className="text-muted-foreground text-sm">→</span>
+                  <Input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="bg-background/50 flex-1"
+                  />
+                </div>
+                {errors.time && (
+                  <p className="text-xs text-destructive mt-1">{errors.time}</p>
+                )}
+              </div>
+              
+              {/* Color picker */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Color</label>
+                <div className="flex gap-2 flex-wrap">
+                  {TASK_COLORS.map((c) => (
+                    <motion.button
+                      key={c}
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setColor(c)}
+                      className={cn(
+                        "w-8 h-8 rounded-full transition-all",
+                        color === c && "ring-2 ring-offset-2 ring-offset-card"
+                      )}
+                      style={{ backgroundColor: c, ...(color === c ? { '--tw-ring-color': c } as React.CSSProperties : {}) }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-card/95 backdrop-blur-sm border-t border-border p-4">
+              {/* Delete confirmation */}
+              <AnimatePresence>
+                {showDeleteConfirm && task && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-3 p-3 bg-destructive/10 border border-destructive/20 rounded-xl overflow-hidden"
+                  >
+                    <p className="text-sm text-destructive font-medium mb-2">Delete this task?</p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={handleConfirmDelete}
+                        className="flex-1"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex items-center justify-between">
+                {task && onDelete && !showDeleteConfirm ? (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onDelete(task.id)}
+                    onClick={handleDeleteClick}
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
@@ -219,17 +289,19 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
                   <div />
                 )}
                 <div className="flex gap-2">
-                  <Button variant="ghost" onClick={onClose}>
+                  <Button variant="ghost" onClick={onClose} size="sm">
                     Cancel
                   </Button>
-                  <Button onClick={handleSubmit} disabled={isLoading}>
-                    {task ? 'Save Changes' : 'Create Task'}
+                  <Button onClick={handleSubmit} disabled={isLoading} size="sm" className="min-w-[100px]">
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : task ? 'Save' : 'Create'}
                   </Button>
                 </div>
               </div>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
