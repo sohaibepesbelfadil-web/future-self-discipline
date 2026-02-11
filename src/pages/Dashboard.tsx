@@ -13,7 +13,7 @@ import RankBadge from '@/components/RankBadge';
 import StreakDisplay from '@/components/StreakDisplay';
 import { StaggerContainer, StaggerItem, PremiumCard } from '@/components/PageTransition';
 import { motion } from 'framer-motion';
-import { Trophy, Users, UserCircle, ChevronRight } from 'lucide-react';
+import { Trophy, Users, UserCircle, ChevronRight, Sparkles } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -84,9 +84,9 @@ const Dashboard: React.FC = () => {
           <StaggerItem>
             <div className="grid grid-cols-3 gap-3">
               {[
+                { to: '/ask', icon: Sparkles, label: 'Ask AI' },
                 { to: '/leaderboard', icon: Trophy, label: 'Ranks' },
                 { to: '/connections', icon: Users, label: 'Connections' },
-                { to: '/groups', icon: UserCircle, label: 'Groups' },
               ].map(({ to, icon: Icon, label }) => (
                 <Link key={to} to={to}>
                   <motion.div

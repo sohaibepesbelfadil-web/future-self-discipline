@@ -21,6 +21,7 @@ import Tasks from "./pages/Tasks";
 import Community from "./pages/Community";
 import Settings from "./pages/Settings";
 import Support from "./pages/Support";
+import AskAI from "./pages/AskAI";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/groups/:groupId" element={<GroupDetail />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/ask" element={<AskAI />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
