@@ -7,13 +7,14 @@ import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import BottomNavbar from '@/components/BottomNavbar';
 import { StaggerContainer, StaggerItem, PremiumCard } from '@/components/PageTransition';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Trash2, Users, MessageSquare, Image, X, Loader2 } from 'lucide-react';
+import { Send, Trash2, Users, MessageSquare, Image, X, Loader2, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { format, formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { useIsAdminOrMod } from '@/hooks/useUserRole';
 
 const Community: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -24,6 +25,7 @@ const Community: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdminOrMod } = useIsAdminOrMod();
 
   const [newPost, setNewPost] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -311,12 +313,13 @@ const Community: React.FC = () => {
                               </div>
                             </div>
                           </div>
-                          {isOwn && (
+                          {(isOwn || isAdminOrMod) && (
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => deletePost.mutate(post.id)}
                               className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
+                              title={isAdminOrMod && !isOwn ? 'Delete as moderator' : 'Delete post'}
                             >
                               <Trash2 className="w-4 h-4" />
                             </motion.button>

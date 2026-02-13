@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsAdminOrMod } from '@/hooks/useUserRole';
 
 const Settings: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -41,6 +42,7 @@ const Settings: React.FC = () => {
   const updateProfile = useUpdateProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdminOrMod, isLoading: roleLoading } = useIsAdminOrMod();
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   if (authLoading || profileLoading) {
@@ -130,6 +132,17 @@ const Settings: React.FC = () => {
         },
       ],
     },
+    ...(isAdminOrMod ? [{
+      title: 'Administration',
+      items: [
+        {
+          icon: Shield,
+          label: 'Admin Panel',
+          description: 'Manage posts, bans, and moderation',
+          action: () => navigate('/admin'),
+        },
+      ],
+    }] : []),
   ];
 
   return (
