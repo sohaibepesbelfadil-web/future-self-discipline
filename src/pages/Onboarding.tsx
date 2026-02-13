@@ -66,7 +66,7 @@ const Onboarding: React.FC = () => {
   const handleProfileComplete = async (profileData: { username: string; real_name: string; gender: string; age: number; avatar_url?: string }) => {
     try {
       await updateProfile.mutateAsync(profileData);
-      setStep(4);
+      setStep(5);
     } catch (error: any) {
       console.error('Failed to save profile:', error);
     }
