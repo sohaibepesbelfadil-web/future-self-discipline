@@ -5,10 +5,12 @@ import { useProfile } from '@/hooks/useProfile';
 import {
   useConnections,
   usePendingRequests,
+  useSentRequests,
   useSearchUsers,
   useSendConnectionRequest,
   useRespondToRequest,
   useRemoveConnection,
+  useCancelRequest,
   ConnectionType,
 } from '@/hooks/useConnections';
 import { useUserScore } from '@/hooks/useScores';
@@ -19,8 +21,8 @@ import { StaggerContainer, StaggerItem, PremiumCard } from '@/components/PageTra
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { motion } from 'framer-motion';
-import { ArrowLeft, UserPlus, Check, X, Users, Heart, Search } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, UserPlus, Check, X, Users, Heart, Search, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ConnectionCard: React.FC<{
@@ -39,10 +41,14 @@ const ConnectionCard: React.FC<{
       className="premium-card p-4 flex items-center justify-between"
     >
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-muted border border-border/50 flex items-center justify-center">
-          <span className="text-lg font-mono font-bold text-muted-foreground">
-            {(connection.profile?.display_name || connection.profile?.username || 'U')[0].toUpperCase()}
-          </span>
+        <div className="w-12 h-12 rounded-xl bg-muted border border-border/50 flex items-center justify-center overflow-hidden">
+          {connection.profile?.avatar_url ? (
+            <img src={connection.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-lg font-mono font-bold text-muted-foreground">
+              {(connection.profile?.display_name || connection.profile?.username || 'U')[0].toUpperCase()}
+            </span>
+          )}
         </div>
         <div>
           <p className="font-medium">
@@ -57,7 +63,6 @@ const ConnectionCard: React.FC<{
         </div>
       </div>
       <motion.button
-        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={onRemove}
         disabled={isRemoving}
@@ -74,79 +79,107 @@ const PendingRequestCard: React.FC<{
   onAccept: () => void;
   onReject: () => void;
   isProcessing: boolean;
-}> = ({ request, onAccept, onReject, isProcessing }) => {
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="premium-card p-4 flex items-center justify-between border-warning/30"
+}> = ({ request, onAccept, onReject, isProcessing }) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.95 }}
+    className="premium-card p-4 flex items-center justify-between border-warning/30"
+  >
+    <div className="flex items-center gap-4">
+      <div className="w-12 h-12 rounded-xl bg-warning/10 border border-warning/30 flex items-center justify-center">
+        <span className="text-lg font-mono font-bold text-warning">
+          {(request.requester_profile?.display_name || request.requester_profile?.username || 'U')[0].toUpperCase()}
+        </span>
+      </div>
+      <div>
+        <p className="font-medium">
+          {request.requester_profile?.display_name || request.requester_profile?.username || 'Anonymous'}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          wants to be your <span className="text-warning font-medium">{request.connection_type}</span>
+        </p>
+      </div>
+    </div>
+    <div className="flex gap-2">
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={onAccept}
+        disabled={isProcessing}
+        className="p-2 rounded-lg bg-success text-success-foreground hover:bg-success/80 transition-colors"
+      >
+        <Check className="w-4 h-4" />
+      </motion.button>
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={onReject}
+        disabled={isProcessing}
+        className="p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+      >
+        <X className="w-4 h-4" />
+      </motion.button>
+    </div>
+  </motion.div>
+);
+
+const SentRequestCard: React.FC<{
+  request: any;
+  onCancel: () => void;
+  isCancelling: boolean;
+}> = ({ request, onCancel, isCancelling }) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -10 }}
+    className="premium-card p-4 flex items-center justify-between"
+  >
+    <div className="flex items-center gap-4">
+      <div className="w-12 h-12 rounded-xl bg-muted border border-border/50 flex items-center justify-center">
+        <Clock className="w-5 h-5 text-muted-foreground" />
+      </div>
+      <div>
+        <p className="font-medium">
+          {request.addressee_profile?.display_name || request.addressee_profile?.username || 'Anonymous'}
+        </p>
+        <p className="text-xs text-warning">Pending • {request.connection_type}</p>
+      </div>
+    </div>
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={onCancel}
+      disabled={isCancelling}
+      className="text-xs text-destructive hover:text-destructive"
     >
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-warning/10 border border-warning/30 flex items-center justify-center">
-          <span className="text-lg font-mono font-bold text-warning">
-            {(request.requester_profile?.display_name || request.requester_profile?.username || 'U')[0].toUpperCase()}
-          </span>
-        </div>
-        <div>
-          <p className="font-medium">
-            {request.requester_profile?.display_name || request.requester_profile?.username || 'Anonymous'}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            wants to be your <span className="text-warning font-medium">{request.connection_type}</span>
-          </p>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={onAccept}
-          disabled={isProcessing}
-          className="p-2 rounded-lg bg-success text-success-foreground hover:bg-success/80 transition-colors"
-        >
-          <Check className="w-4 h-4" />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={onReject}
-          disabled={isProcessing}
-          className="p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-};
+      Cancel
+    </Button>
+  </motion.div>
+);
 
 const Connections: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: connections, isLoading: connectionsLoading } = useConnections();
   const { data: pendingRequests } = usePendingRequests();
+  const { data: sentRequests } = useSentRequests();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<ConnectionType>('friend');
-  const { data: searchResults } = useSearchUsers(searchTerm);
+  const { data: searchResults, isLoading: searchLoading } = useSearchUsers(searchTerm);
 
   const sendRequest = useSendConnectionRequest();
   const respondToRequest = useRespondToRequest();
   const removeConnection = useRemoveConnection();
+  const cancelRequest = useCancelRequest();
 
   const isLoading = authLoading || profileLoading || connectionsLoading;
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-muted-foreground font-mono"
-        >
-          Loading...
-        </motion.div>
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -156,6 +189,15 @@ const Connections: React.FC = () => {
 
   const friends = connections?.filter(c => c.connection_type === 'friend') || [];
   const family = connections?.filter(c => c.connection_type === 'family') || [];
+
+  // IDs already connected or with pending requests
+  const existingIds = new Set([
+    ...(connections?.map((c: any) => c.connected_user_id) || []),
+    ...(sentRequests?.map(r => r.addressee_id) || []),
+    ...(pendingRequests?.map(r => r.requester_id) || []),
+  ]);
+
+  const filteredResults = searchResults?.filter(r => !existingIds.has(r.user_id)) || [];
 
   const handleSendRequest = async (addresseeId: string) => {
     try {
@@ -175,16 +217,16 @@ const Connections: React.FC = () => {
       await respondToRequest.mutateAsync({ connectionId, accept: true });
       toast.success('Connection accepted');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to accept request');
+      toast.error(error.message || 'Failed to accept');
     }
   };
 
   const handleReject = async (connectionId: string) => {
     try {
       await respondToRequest.mutateAsync({ connectionId, accept: false });
-      toast.success('Request rejected');
+      toast.success('Request declined');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to reject request');
+      toast.error(error.message || 'Failed to decline');
     }
   };
 
@@ -193,7 +235,16 @@ const Connections: React.FC = () => {
       await removeConnection.mutateAsync(connectionId);
       toast.success('Connection removed');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to remove connection');
+      toast.error(error.message || 'Failed to remove');
+    }
+  };
+
+  const handleCancel = async (connectionId: string) => {
+    try {
+      await cancelRequest.mutateAsync(connectionId);
+      toast.success('Request cancelled');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to cancel');
     }
   };
 
@@ -202,7 +253,6 @@ const Connections: React.FC = () => {
       <ResponsiveNavbar />
       <main className="pt-16 md:pt-20 pb-24 md:pb-12 px-4 md:px-6">
         <StaggerContainer className="max-w-3xl mx-auto space-y-6 md:space-y-8">
-          {/* Header */}
           <StaggerItem>
             <Link
               to="/dashboard"
@@ -229,19 +279,44 @@ const Connections: React.FC = () => {
             <StaggerItem>
               <div className="space-y-4">
                 <h2 className="text-sm font-mono uppercase tracking-widest text-warning">
-                  Pending Requests ({pendingRequests.length})
+                  Incoming Requests ({pendingRequests.length})
                 </h2>
-                <div className="space-y-3">
-                  {pendingRequests.map((request) => (
-                    <PendingRequestCard
-                      key={request.id}
-                      request={request}
-                      onAccept={() => handleAccept(request.id)}
-                      onReject={() => handleReject(request.id)}
-                      isProcessing={respondToRequest.isPending}
-                    />
-                  ))}
-                </div>
+                <AnimatePresence mode="popLayout">
+                  <div className="space-y-3">
+                    {pendingRequests.map((request) => (
+                      <PendingRequestCard
+                        key={request.id}
+                        request={request}
+                        onAccept={() => handleAccept(request.id)}
+                        onReject={() => handleReject(request.id)}
+                        isProcessing={respondToRequest.isPending}
+                      />
+                    ))}
+                  </div>
+                </AnimatePresence>
+              </div>
+            </StaggerItem>
+          )}
+
+          {/* Sent Requests */}
+          {sentRequests && sentRequests.length > 0 && (
+            <StaggerItem>
+              <div className="space-y-4">
+                <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground">
+                  Sent Requests ({sentRequests.length})
+                </h2>
+                <AnimatePresence mode="popLayout">
+                  <div className="space-y-3">
+                    {sentRequests.map((request) => (
+                      <SentRequestCard
+                        key={request.id}
+                        request={request}
+                        onCancel={() => handleCancel(request.id)}
+                        isCancelling={cancelRequest.isPending}
+                      />
+                    ))}
+                  </div>
+                </AnimatePresence>
               </div>
             </StaggerItem>
           )}
@@ -265,16 +340,22 @@ const Connections: React.FC = () => {
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value as ConnectionType)}
-                  className="bg-muted border border-border/50 px-3 text-sm font-mono rounded-xl"
+                  className="bg-muted border border-border/50 px-3 text-sm font-mono rounded-xl text-foreground"
                 >
                   <option value="friend">Friend</option>
                   <option value="family">Family</option>
                 </select>
               </div>
 
-              {searchResults && searchResults.length > 0 && (
+              {searchLoading && searchTerm.length >= 2 && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+
+              {filteredResults.length > 0 && (
                 <div className="space-y-2">
-                  {searchResults.map((result) => (
+                  {filteredResults.map((result) => (
                     <motion.div
                       key={result.user_id}
                       initial={{ opacity: 0, y: 5 }}
@@ -288,14 +369,24 @@ const Connections: React.FC = () => {
                         size="sm"
                         onClick={() => handleSendRequest(result.user_id)}
                         disabled={sendRequest.isPending}
-                        className="btn-harsh text-xs py-1"
+                        className="text-xs"
                       >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Add as {selectedType}
+                        {sendRequest.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <UserPlus className="w-4 h-4 mr-1.5" />
+                            Add
+                          </>
+                        )}
                       </Button>
                     </motion.div>
                   ))}
                 </div>
+              )}
+
+              {searchTerm.length >= 2 && !searchLoading && filteredResults.length === 0 && searchResults !== undefined && (
+                <p className="text-sm text-muted-foreground text-center py-4">No users found</p>
               )}
             </PremiumCard>
           </StaggerItem>
@@ -316,53 +407,48 @@ const Connections: React.FC = () => {
 
               <TabsContent value="friends" className="space-y-3 mt-4">
                 {friends.length === 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12 text-muted-foreground premium-card"
-                  >
+                  <div className="text-center py-12 text-muted-foreground premium-card">
                     <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No friends connected yet.</p>
                     <p className="text-sm mt-2">Friends can see your rank and discipline score.</p>
-                  </motion.div>
+                  </div>
                 ) : (
-                  friends.map((connection) => (
-                    <ConnectionCard
-                      key={connection.id}
-                      connection={connection}
-                      onRemove={() => handleRemove(connection.id)}
-                      isRemoving={removeConnection.isPending}
-                    />
-                  ))
+                  <AnimatePresence mode="popLayout">
+                    {friends.map((connection) => (
+                      <ConnectionCard
+                        key={connection.id}
+                        connection={connection}
+                        onRemove={() => handleRemove(connection.id)}
+                        isRemoving={removeConnection.isPending}
+                      />
+                    ))}
+                  </AnimatePresence>
                 )}
               </TabsContent>
 
               <TabsContent value="family" className="space-y-3 mt-4">
                 {family.length === 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12 text-muted-foreground premium-card"
-                  >
+                  <div className="text-center py-12 text-muted-foreground premium-card">
                     <Heart className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No family connected yet.</p>
                     <p className="text-sm mt-2">Family sees everything. No hiding.</p>
-                  </motion.div>
+                  </div>
                 ) : (
-                  family.map((connection) => (
-                    <ConnectionCard
-                      key={connection.id}
-                      connection={connection}
-                      onRemove={() => handleRemove(connection.id)}
-                      isRemoving={removeConnection.isPending}
-                    />
-                  ))
+                  <AnimatePresence mode="popLayout">
+                    {family.map((connection) => (
+                      <ConnectionCard
+                        key={connection.id}
+                        connection={connection}
+                        onRemove={() => handleRemove(connection.id)}
+                        isRemoving={removeConnection.isPending}
+                      />
+                    ))}
+                  </AnimatePresence>
                 )}
               </TabsContent>
             </Tabs>
           </StaggerItem>
 
-          {/* Philosophy note */}
           <StaggerItem>
             <div className="message-box">
               <p className="text-sm text-muted-foreground italic">

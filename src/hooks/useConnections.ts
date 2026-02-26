@@ -16,17 +16,6 @@ export interface Connection {
   updated_at: string;
 }
 
-export interface ConnectionWithProfile extends Connection {
-  requester_profile?: {
-    username: string | null;
-    display_name: string | null;
-  };
-  addressee_profile?: {
-    username: string | null;
-    display_name: string | null;
-  };
-}
-
 export const useConnections = () => {
   const { user } = useAuth();
 
@@ -35,14 +24,12 @@ export const useConnections = () => {
     queryFn: async () => {
       if (!user) return [];
 
-      // Get connections where user is requester
       const { data: asRequester, error: error1 } = await supabase
         .from('connections')
         .select('*')
         .eq('requester_id', user.id)
         .eq('status', 'accepted');
 
-      // Get connections where user is addressee
       const { data: asAddressee, error: error2 } = await supabase
         .from('connections')
         .select('*')
@@ -52,26 +39,23 @@ export const useConnections = () => {
       if (error1) throw error1;
       if (error2) throw error2;
 
-      // Get all connected user IDs
       const connectedIds = [
         ...(asRequester || []).map(c => c.addressee_id),
         ...(asAddressee || []).map(c => c.requester_id),
       ];
 
-      // Fetch profiles for connected users
       if (connectedIds.length === 0) return [];
 
       const { data: profiles, error: error3 } = await supabase
         .from('profiles')
-        .select('user_id, username, display_name')
+        .select('user_id, username, display_name, avatar_url')
         .in('user_id', connectedIds);
 
       if (error3) throw error3;
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      // Combine connections with profiles
-      const connections = [
+      return [
         ...(asRequester || []).map(c => ({
           ...c,
           connected_user_id: c.addressee_id,
@@ -83,8 +67,6 @@ export const useConnections = () => {
           profile: profileMap.get(c.requester_id),
         })),
       ];
-
-      return connections;
     },
     enabled: !!user,
   });
@@ -106,13 +88,12 @@ export const usePendingRequests = () => {
 
       if (error) throw error;
 
-      // Get requester profiles
       const requesterIds = data.map(c => c.requester_id);
       if (requesterIds.length === 0) return [];
 
       const { data: profiles, error: error2 } = await supabase
         .from('profiles')
-        .select('user_id, username, display_name')
+        .select('user_id, username, display_name, avatar_url')
         .in('user_id', requesterIds);
 
       if (error2) throw error2;
@@ -128,6 +109,44 @@ export const usePendingRequests = () => {
   });
 };
 
+// Outgoing pending requests (sent by current user)
+export const useSentRequests = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['sent_requests', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('connections')
+        .select('*')
+        .eq('requester_id', user.id)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      const addresseeIds = data.map(c => c.addressee_id);
+      if (addresseeIds.length === 0) return [];
+
+      const { data: profiles, error: error2 } = await supabase
+        .from('profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', addresseeIds);
+
+      if (error2) throw error2;
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      return data.map(c => ({
+        ...c,
+        addressee_profile: profileMap.get(c.addressee_id),
+      }));
+    },
+    enabled: !!user,
+  });
+};
+
 export const useSendConnectionRequest = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -135,6 +154,20 @@ export const useSendConnectionRequest = () => {
   return useMutation({
     mutationFn: async ({ addressee_id, connection_type }: { addressee_id: string; connection_type: ConnectionType }) => {
       if (!user) throw new Error('Not authenticated');
+      if (addressee_id === user.id) throw new Error("You can't add yourself");
+
+      // Check for existing connection (in either direction)
+      const { data: existing } = await supabase
+        .from('connections')
+        .select('id, status')
+        .or(`and(requester_id.eq.${user.id},addressee_id.eq.${addressee_id}),and(requester_id.eq.${addressee_id},addressee_id.eq.${user.id})`)
+        .not('status', 'eq', 'rejected');
+
+      if (existing && existing.length > 0) {
+        const conn = existing[0];
+        if (conn.status === 'accepted') throw new Error('Already connected');
+        if (conn.status === 'pending') throw new Error('Request already pending');
+      }
 
       const { data, error } = await supabase
         .from('connections')
@@ -146,10 +179,34 @@ export const useSendConnectionRequest = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') throw new Error('Request already sent');
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: ['sent_requests'] });
+      queryClient.invalidateQueries({ queryKey: ['pending_requests'] });
+    },
+  });
+};
+
+export const useCancelRequest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (connectionId: string) => {
+      const { error } = await supabase
+        .from('connections')
+        .delete()
+        .eq('id', connectionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sent_requests'] });
       queryClient.invalidateQueries({ queryKey: ['connections'] });
     },
   });
@@ -173,6 +230,7 @@ export const useRespondToRequest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['connections'] });
       queryClient.invalidateQueries({ queryKey: ['pending_requests'] });
+      queryClient.invalidateQueries({ queryKey: ['sent_requests'] });
     },
   });
 };
@@ -205,7 +263,7 @@ export const useSearchUsers = (searchTerm: string) => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, username, display_name')
+        .select('user_id, username, display_name, avatar_url')
         .neq('user_id', user?.id)
         .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%`)
         .limit(10);
