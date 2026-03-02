@@ -5,6 +5,7 @@ import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import ResponsiveNavbar from '@/components/ResponsiveNavbar';
 import BottomNavbar from '@/components/BottomNavbar';
 import { StaggerContainer, StaggerItem, PremiumCard } from '@/components/PageTransition';
+import { PushNotificationSettings } from '@/components/PushNotificationSettings';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
@@ -122,6 +123,10 @@ const Settings: React.FC = () => {
       ],
     },
     {
+      title: 'Notifications',
+      custom: true,
+    },
+    {
       title: 'Support',
       items: [
         {
@@ -160,8 +165,11 @@ const Settings: React.FC = () => {
                 <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-3 block px-1">
                   {section.title}
                 </span>
+                {(section as any).custom ? (
+                  <PushNotificationSettings />
+                ) : (
                 <PremiumCard className="divide-y divide-border">
-                  {section.items.map((item, itemIndex) => (
+                  {(section as any).items?.map((item: any, itemIndex: number) => (
                     <motion.div
                       key={item.label}
                       initial={{ opacity: 0 }}
@@ -193,6 +201,7 @@ const Settings: React.FC = () => {
                     </motion.div>
                   ))}
                 </PremiumCard>
+                )}
               </div>
             </StaggerItem>
           ))}
