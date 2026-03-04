@@ -16,9 +16,9 @@ const StreakDisplay: React.FC<StreakDisplayProps> = ({
   className = '',
 }) => {
   const getFireColor = () => {
-    if (currentStreak >= 30) return 'text-orange-400';
-    if (currentStreak >= 14) return 'text-orange-500';
-    if (currentStreak >= 7) return 'text-yellow-500';
+    if (currentStreak >= 30) return 'text-warning';
+    if (currentStreak >= 14) return 'text-warning';
+    if (currentStreak >= 7) return 'text-warning/80';
     return 'text-muted-foreground';
   };
 
@@ -37,14 +37,8 @@ const StreakDisplay: React.FC<StreakDisplayProps> = ({
         animate={{ opacity: 1, scale: 1 }}
       >
         <motion.div
-          animate={{
-            scale: [1, getFireScale(), 1],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          animate={{ scale: [1, getFireScale(), 1] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           className={getFireColor()}
         >
           <Flame className="w-5 h-5" />
@@ -66,22 +60,15 @@ const StreakDisplay: React.FC<StreakDisplayProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       className={`glass-card p-6 ${className}`}
     >
       <div className="flex items-center gap-3 mb-6">
         <motion.div
-          animate={{
-            scale: [1, getFireScale(), 1],
-            rotate: [0, -5, 5, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className={`w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center ${getFireColor()}`}
+          animate={{ scale: [1, getFireScale(), 1], rotate: [0, -3, 3, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-12 h-12 rounded-xl bg-warning/10 border border-warning/20 flex items-center justify-center text-warning"
         >
           <Flame className="w-6 h-6" />
         </motion.div>
@@ -91,11 +78,14 @@ const StreakDisplay: React.FC<StreakDisplayProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 rounded-xl bg-background/50 border border-border">
+      <div className="grid grid-cols-2 gap-3">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="p-4 rounded-xl bg-primary/5 border border-primary/15"
+        >
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
               Current
             </span>
           </div>
@@ -105,23 +95,26 @@ const StreakDisplay: React.FC<StreakDisplayProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             className="flex items-baseline gap-1"
           >
-            <span className="text-3xl font-bold font-mono">{currentStreak}</span>
+            <span className="text-3xl font-bold font-mono text-gradient">{currentStreak}</span>
             <span className="text-sm text-muted-foreground">days</span>
           </motion.div>
-        </div>
+        </motion.div>
 
-        <div className="p-4 rounded-xl bg-background/50 border border-border">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="p-4 rounded-xl bg-warning/5 border border-warning/15"
+        >
           <div className="flex items-center gap-2 mb-2">
             <Trophy className="w-4 h-4 text-warning" />
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
               Best
             </span>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold font-mono">{longestStreak}</span>
+            <span className="text-3xl font-bold font-mono text-gradient-warm">{longestStreak}</span>
             <span className="text-sm text-muted-foreground">days</span>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {currentStreak > 0 && (
@@ -129,12 +122,12 @@ const StreakDisplay: React.FC<StreakDisplayProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-4 pt-4 border-t border-border"
+          className="mt-4 pt-4 border-t border-border/50"
         >
           <p className="text-sm text-muted-foreground text-center">
             {currentStreak >= longestStreak ? (
-              <span className="text-primary">
-                🔥 You're on a record streak! Keep pushing!
+              <span className="text-primary font-medium">
+                You're on a record streak! Keep pushing!
               </span>
             ) : (
               <span>

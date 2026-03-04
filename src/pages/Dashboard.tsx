@@ -11,9 +11,9 @@ import ProgressGraph from '@/components/ProgressGraph';
 import CalendarPreview from '@/components/CalendarPreview';
 import RankBadge from '@/components/RankBadge';
 import StreakDisplay from '@/components/StreakDisplay';
-import { StaggerContainer, StaggerItem, PremiumCard } from '@/components/PageTransition';
+import { StaggerContainer, StaggerItem, PremiumCard, PageLoading } from '@/components/PageTransition';
 import { motion } from 'framer-motion';
-import { Trophy, Users, UserCircle, ChevronRight, Sparkles } from 'lucide-react';
+import { Trophy, Users, ChevronRight, Sparkles } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -21,17 +21,7 @@ const Dashboard: React.FC = () => {
   const { data: myScore } = useMyScore();
 
   if (authLoading || profileLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-muted-foreground font-mono"
-        >
-          Loading...
-        </motion.div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!user) return <Navigate to="/auth" replace />;
@@ -41,7 +31,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-background">
       <ResponsiveNavbar />
       <main className="pt-16 md:pt-20 pb-24 md:pb-12 px-4 md:px-6">
-        <StaggerContainer className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+        <StaggerContainer className="max-w-6xl mx-auto space-y-5 md:space-y-7">
           {/* Score Banner */}
           {myScore && (
             <StaggerItem>
@@ -51,7 +41,8 @@ const Dashboard: React.FC = () => {
                     <div className="flex items-center gap-4 md:gap-6">
                       <motion.div
                         whileHover={{ scale: 1.05 }}
-                        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden border-2 border-border flex items-center justify-center bg-muted"
+                        className="w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden border-2 border-primary/20 flex items-center justify-center bg-muted"
+                        style={{ boxShadow: 'var(--glow-primary)' }}
                       >
                         {profile?.avatar_url ? (
                           <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -84,18 +75,18 @@ const Dashboard: React.FC = () => {
           <StaggerItem>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { to: '/ask', icon: Sparkles, label: 'Ask AI' },
-                { to: '/leaderboard', icon: Trophy, label: 'Ranks' },
-                { to: '/connections', icon: Users, label: 'Connections' },
-              ].map(({ to, icon: Icon, label }) => (
+                { to: '/ask', icon: Sparkles, label: 'Ask AI', gradient: 'from-primary/10 to-accent/10' },
+                { to: '/leaderboard', icon: Trophy, label: 'Ranks', gradient: 'from-warning/10 to-primary/10' },
+                { to: '/connections', icon: Users, label: 'Connect', gradient: 'from-success/10 to-primary/10' },
+              ].map(({ to, icon: Icon, label, gradient }) => (
                 <Link key={to} to={to}>
                   <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="glass-card p-4 flex flex-col items-center gap-2 hover:border-primary/50 transition-all"
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`glass-card p-4 flex flex-col items-center gap-2 bg-gradient-to-br ${gradient} hover:border-primary/30 transition-all`}
                   >
-                    <Icon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                    <Icon className="w-5 h-5 text-primary" />
+                    <span className="text-xs font-medium text-foreground/80">{label}</span>
                   </motion.div>
                 </Link>
               ))}
@@ -106,7 +97,6 @@ const Dashboard: React.FC = () => {
             <FutureMessage />
           </StaggerItem>
 
-          {/* Streak Display */}
           {myScore && (
             <StaggerItem>
               <StreakDisplay

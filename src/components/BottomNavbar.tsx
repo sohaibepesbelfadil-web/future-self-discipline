@@ -35,10 +35,10 @@ const BottomNavbar: React.FC = () => {
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
     >
-      {/* Frosted glass background */}
-      <div className="absolute inset-0 bg-card/90 backdrop-blur-xl border-t border-border" />
+      {/* Glass background with gradient border */}
+      <div className="absolute inset-0 bg-card/85 backdrop-blur-2xl border-t border-border/60" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       
-      {/* Safe area padding for iOS */}
       <div className="relative flex items-center justify-around py-2 pb-safe">
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -49,21 +49,21 @@ const BottomNavbar: React.FC = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className="relative flex flex-col items-center justify-center w-16 h-14 group"
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.85 }}
             >
-              {/* Active indicator */}
+              {/* Active glow dot */}
               {active && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-x-2 top-0 h-0.5 bg-primary rounded-full"
+                  className="absolute -top-0.5 w-6 h-1 rounded-full"
+                  style={{ background: 'var(--gradient-primary)' }}
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
 
-              {/* Icon container */}
               <motion.div
                 animate={{
-                  scale: active ? 1.1 : 1,
+                  scale: active ? 1.15 : 1,
                   y: active ? -2 : 0,
                 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -71,14 +71,11 @@ const BottomNavbar: React.FC = () => {
                   active ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} />
+                <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.8} />
               </motion.div>
 
-              {/* Label */}
               <motion.span
-                animate={{
-                  opacity: active ? 1 : 0.6,
-                }}
+                animate={{ opacity: active ? 1 : 0.5 }}
                 className={`text-[10px] font-medium mt-0.5 transition-colors ${
                   active ? 'text-primary' : 'text-muted-foreground'
                 }`}
