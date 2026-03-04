@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useAllDailyLogs } from '@/hooks/usePromises';
-import { format, subDays, parseISO, startOfDay } from 'date-fns';
+import { format, subDays, parseISO } from 'date-fns';
+import { motion } from 'framer-motion';
 
 const ProgressGraph: React.FC = () => {
   const { data: logs = [], isLoading } = useAllDailyLogs();
@@ -18,13 +19,7 @@ const ProgressGraph: React.FC = () => {
       const total = kept + broken;
       const rate = total > 0 ? Math.round((kept / total) * 100) : null;
 
-      return {
-        date,
-        displayDate: format(parseISO(date), 'MMM d'),
-        kept,
-        broken,
-        rate,
-      };
+      return { date, displayDate: format(parseISO(date), 'MMM d'), kept, broken, rate };
     });
   }, [logs]);
 
@@ -33,8 +28,8 @@ const ProgressGraph: React.FC = () => {
   if (isLoading) {
     return (
       <div className="glass-card p-6">
-        <div className="h-4 bg-muted rounded w-32 mb-6" />
-        <div className="h-40 bg-muted/20 rounded animate-pulse" />
+        <div className="h-3 shimmer rounded w-28 mb-6" />
+        <div className="h-40 shimmer rounded-xl" />
       </div>
     );
   }
@@ -49,7 +44,7 @@ const ProgressGraph: React.FC = () => {
         {/* Grid lines */}
         <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="border-b border-border/30" />
+            <div key={i} className="border-b border-border/20" />
           ))}
         </div>
 
@@ -61,33 +56,31 @@ const ProgressGraph: React.FC = () => {
             const keptHeight = day.kept > 0 ? (day.kept / total) * 100 : 0;
 
             return (
-              <div
-                key={day.date}
-                className="flex-1 flex flex-col items-center group"
-              >
-                <div
-                  className="w-full relative transition-all duration-300"
-                  style={{ height: `${height}%`, minHeight: total > 0 ? '4px' : '0' }}
+              <div key={day.date} className="flex-1 flex flex-col items-center group">
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: `${height}%` }}
+                  transition={{ delay: i * 0.03, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-full relative rounded-t-sm"
+                  style={{ minHeight: total > 0 ? '4px' : '0' }}
                 >
                   {total > 0 && (
                     <>
-                      {/* Broken portion */}
                       <div
-                        className="absolute bottom-0 left-0 right-0 bg-destructive/60"
+                        className="absolute bottom-0 left-0 right-0 bg-destructive/50 rounded-t-sm"
                         style={{ height: `${100 - keptHeight}%` }}
                       />
-                      {/* Kept portion */}
                       <div
-                        className="absolute top-0 left-0 right-0 bg-success"
+                        className="absolute top-0 left-0 right-0 bg-success rounded-t-sm"
                         style={{ height: `${keptHeight}%` }}
                       />
                     </>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Tooltip */}
                 <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                  <div className="bg-popover border border-border px-2 py-1 text-xs whitespace-nowrap">
+                  <div className="bg-popover border border-border px-2 py-1 text-xs whitespace-nowrap rounded-lg">
                     <p className="font-mono">{day.displayDate}</p>
                     {total > 0 ? (
                       <>
@@ -114,11 +107,11 @@ const ProgressGraph: React.FC = () => {
       {/* Legend */}
       <div className="flex justify-center gap-6 mt-4 text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-success" />
+          <div className="w-3 h-3 bg-success rounded-sm" />
           <span className="text-muted-foreground">Kept</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-destructive/60" />
+          <div className="w-3 h-3 bg-destructive/50 rounded-sm" />
           <span className="text-muted-foreground">Broken</span>
         </div>
       </div>

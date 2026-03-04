@@ -1,6 +1,7 @@
 import React from 'react';
 import { getRankProgress, RANKS } from '@/hooks/useScores';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface ScoreCardProps {
   score: number;
@@ -28,7 +29,14 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
         <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">
           Discipline Score
         </p>
-        <p className="text-5xl font-mono font-bold text-foreground">{score}</p>
+        <motion.p
+          className="text-5xl font-mono font-bold text-gradient"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        >
+          {score}
+        </motion.p>
         <p className="text-sm font-mono uppercase tracking-widest text-primary mt-1">
           {current}
         </p>
@@ -41,10 +49,11 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
             <span>{current}</span>
             <span>{next}</span>
           </div>
-          <div className="h-1 bg-muted overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all duration-500"
-              style={{ width: `${progress}%` }}
+          <div className="progress-animated">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
           <p className="text-xs text-center text-muted-foreground">
@@ -54,15 +63,21 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
       )}
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="text-center p-3 bg-success/10 border border-success/20">
+      <div className="grid grid-cols-2 gap-3">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="text-center p-3 bg-success/10 border border-success/20 rounded-xl"
+        >
           <p className="text-2xl font-mono font-bold text-success">{keptCount}</p>
           <p className="text-xs font-mono uppercase text-success/70">Kept</p>
-        </div>
-        <div className="text-center p-3 bg-destructive/10 border border-destructive/20">
+        </motion.div>
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="text-center p-3 bg-destructive/10 border border-destructive/20 rounded-xl"
+        >
           <p className="text-2xl font-mono font-bold text-destructive">{brokenCount}</p>
           <p className="text-xs font-mono uppercase text-destructive/70">Broken</p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Consistency and Streaks */}
