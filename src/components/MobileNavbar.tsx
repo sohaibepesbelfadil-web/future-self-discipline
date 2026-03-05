@@ -42,8 +42,12 @@ const MobileNavbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-xl border-b border-border md:hidden">
-      <div className="px-4">
+    <nav className="fixed top-0 left-0 right-0 z-50 md:hidden">
+      {/* Frosted glass background */}
+      <div className="absolute inset-0 bg-card/80 backdrop-blur-2xl border-b border-border/50" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
+      
+      <div className="relative px-4">
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link to="/dashboard" className="font-bold tracking-tight text-sm">
@@ -57,10 +61,10 @@ const MobileNavbar: React.FC = () => {
                 <Menu className="w-5 h-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 bg-card border-l border-border p-0">
+            <SheetContent side="right" className="w-80 bg-card/95 backdrop-blur-2xl border-l border-border/50 p-0">
               <div className="flex flex-col h-full">
                 {/* Header with Profile */}
-                <div className="p-6 border-b border-border">
+                <div className="p-6 border-b border-border/50">
                   <SheetClose asChild>
                     <Link to="/profile" className="flex items-center gap-3">
                       <motion.div
@@ -88,9 +92,7 @@ const MobileNavbar: React.FC = () => {
                 {/* Navigation */}
                 <div className="flex-1 overflow-auto py-4">
                   <div className="px-4 mb-2">
-                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                      Main
-                    </span>
+                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Main</span>
                   </div>
                   {mainItems.map((item) => (
                     <SheetClose asChild key={item.path}>
@@ -109,9 +111,7 @@ const MobileNavbar: React.FC = () => {
                   ))}
 
                   <div className="px-4 mt-6 mb-2">
-                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                      Promises
-                    </span>
+                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Promises</span>
                   </div>
                   {promiseItems.map((item) => (
                     <SheetClose asChild key={item.path}>
@@ -130,9 +130,7 @@ const MobileNavbar: React.FC = () => {
                   ))}
 
                   <div className="px-4 mt-6 mb-2">
-                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                      Social
-                    </span>
+                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Social</span>
                   </div>
                   {socialItems.map((item) => (
                     <SheetClose asChild key={item.path}>
@@ -151,9 +149,7 @@ const MobileNavbar: React.FC = () => {
                   ))}
 
                   <div className="px-4 mt-6 mb-2">
-                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                      Settings
-                    </span>
+                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Settings</span>
                   </div>
                   {settingsItems.map((item) => (
                     <SheetClose asChild key={item.path}>
@@ -173,7 +169,7 @@ const MobileNavbar: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-border">
+                <div className="p-4 border-t border-border/50">
                   <button
                     onClick={signOut}
                     className="flex items-center gap-3 w-full px-2 py-3 text-sm font-medium text-muted-foreground hover:text-destructive transition-colors rounded-xl hover:bg-destructive/10"

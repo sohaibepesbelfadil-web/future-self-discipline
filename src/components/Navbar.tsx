@@ -6,10 +6,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Trophy, Users, UserCircle, LogOut, ChevronDown, FileText, CalendarCheck, MessageSquare, Home, FileCheck, Calendar, Settings, HelpCircle } from 'lucide-react';
+import { User, Trophy, Users, UserCircle, LogOut, ChevronDown, FileText, CalendarCheck, MessageSquare, Home, FileCheck, Calendar, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Navbar: React.FC = () => {
@@ -38,8 +37,12 @@ const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border hidden md:block">
-      <div className="max-w-6xl mx-auto px-6">
+    <nav className="fixed top-0 left-0 right-0 z-50 hidden md:block">
+      {/* Glass background */}
+      <div className="absolute inset-0 bg-card/70 backdrop-blur-2xl border-b border-border/40" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
+
+      <div className="relative max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/dashboard" className="font-bold tracking-tight text-lg">
@@ -77,10 +80,7 @@ const Navbar: React.FC = () => {
               <DropdownMenuContent align="center" className="glass-card border-border min-w-[160px]">
                 {promiseNavItems.map((item) => (
                   <DropdownMenuItem key={item.path} asChild>
-                    <Link
-                      to={item.path}
-                      className="flex items-center gap-2 text-sm"
-                    >
+                    <Link to={item.path} className="flex items-center gap-2 text-sm">
                       <item.icon className="w-4 h-4" />
                       {item.label}
                     </Link>
@@ -103,10 +103,7 @@ const Navbar: React.FC = () => {
               <DropdownMenuContent align="center" className="glass-card border-border min-w-[160px]">
                 {socialItems.map((item) => (
                   <DropdownMenuItem key={item.path} asChild>
-                    <Link
-                      to={item.path}
-                      className="flex items-center gap-2 text-sm"
-                    >
+                    <Link to={item.path} className="flex items-center gap-2 text-sm">
                       <item.icon className="w-4 h-4" />
                       {item.label}
                     </Link>
@@ -132,9 +129,7 @@ const Navbar: React.FC = () => {
             <Link
               to="/profile"
               className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${
-                isActive('/profile')
-                  ? 'bg-primary/10'
-                  : 'hover:bg-muted/50'
+                isActive('/profile') ? 'bg-primary/10' : 'hover:bg-muted/50'
               }`}
             >
               <motion.div
