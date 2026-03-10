@@ -6,9 +6,7 @@ export interface PublicProfile {
   user_id: string;
   username: string | null;
   display_name: string | null;
-  real_name: string | null;
-  gender: string | null;
-  age: number | null;
+  avatar_url: string | null;
   profile_visible: boolean;
   created_at: string;
 }
@@ -20,8 +18,8 @@ export const usePublicProfile = (username: string) => {
       if (!username) return null;
       
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, user_id, username, display_name, real_name, gender, age, profile_visible, created_at')
+        .from('public_profiles')
+        .select('id, user_id, username, display_name, avatar_url, profile_visible, created_at')
         .eq('username', username)
         .maybeSingle();
 
