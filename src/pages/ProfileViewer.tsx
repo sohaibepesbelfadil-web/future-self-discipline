@@ -204,7 +204,7 @@ const ProfileViewer: React.FC = () => {
                 {/* Name & Username */}
                 <div className="space-y-1">
                   <h1 className="text-2xl md:text-3xl font-bold">
-                    {profile.real_name || profile.display_name || profile.username}
+                    {profile.display_name || profile.username}
                   </h1>
                   {profile.username && (
                     <p className="text-sm text-muted-foreground font-mono">@{profile.username}</p>
