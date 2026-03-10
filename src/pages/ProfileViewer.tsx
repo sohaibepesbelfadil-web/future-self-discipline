@@ -224,18 +224,6 @@ const ProfileViewer: React.FC = () => {
 
                 {/* Profile Info */}
                 <div className="pt-4 border-t border-border/30 w-full grid grid-cols-2 gap-4 text-sm">
-                  {profile.gender && (
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <User className="w-4 h-4" />
-                      <span className="capitalize">{profile.gender}</span>
-                    </div>
-                  )}
-                  {profile.age && (
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <span>🎂</span>
-                      <span>{profile.age} years</span>
-                    </div>
-                  )}
                   <div className="flex items-center justify-center gap-2 text-muted-foreground col-span-2">
                     <Calendar className="w-4 h-4" />
                     <span>Joined {format(new Date(profile.created_at), 'MMMM yyyy')}</span>
