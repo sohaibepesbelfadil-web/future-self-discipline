@@ -197,7 +197,7 @@ const ProfileViewer: React.FC = () => {
                   className="avatar-premium"
                 >
                   <span className="relative z-10 text-3xl font-mono font-bold text-muted-foreground">
-                    {(profile.display_name || profile.real_name || profile.username || 'U')[0].toUpperCase()}
+                    {(profile.display_name || profile.username || 'U')[0].toUpperCase()}
                   </span>
                 </motion.div>
 
