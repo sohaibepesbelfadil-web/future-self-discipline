@@ -47,7 +47,7 @@ export const useConnections = () => {
       if (connectedIds.length === 0) return [];
 
       const { data: profiles, error: error3 } = await supabase
-        .from('profiles')
+        .from('safe_profiles')
         .select('user_id, username, display_name, avatar_url')
         .in('user_id', connectedIds);
 
@@ -92,7 +92,7 @@ export const usePendingRequests = () => {
       if (requesterIds.length === 0) return [];
 
       const { data: profiles, error: error2 } = await supabase
-        .from('profiles')
+        .from('safe_profiles')
         .select('user_id, username, display_name, avatar_url')
         .in('user_id', requesterIds);
 
@@ -130,7 +130,7 @@ export const useSentRequests = () => {
       if (addresseeIds.length === 0) return [];
 
       const { data: profiles, error: error2 } = await supabase
-        .from('profiles')
+        .from('safe_profiles')
         .select('user_id, username, display_name, avatar_url')
         .in('user_id', addresseeIds);
 
@@ -262,7 +262,7 @@ export const useSearchUsers = (searchTerm: string) => {
       if (!searchTerm || searchTerm.length < 2) return [];
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('safe_profiles')
         .select('user_id, username, display_name, avatar_url')
         .neq('user_id', user?.id)
         .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%`)
