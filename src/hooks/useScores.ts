@@ -127,16 +127,16 @@ export const useUpdateScoreSettings = () => {
   return useMutation({
     mutationFn: async (updates: { leaderboard_visible?: boolean }) => {
       if (!user) throw new Error('Not authenticated');
+      if (typeof updates.leaderboard_visible !== 'boolean') {
+        throw new Error('Invalid setting');
+      }
 
-      const { data, error } = await supabase
-        .from('user_scores')
-        .update(updates)
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      const { error } = await supabase.rpc('set_leaderboard_visibility', {
+        _visible: updates.leaderboard_visible,
+      });
 
       if (error) throw error;
-      return data;
+      return updates;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user_score'] });
