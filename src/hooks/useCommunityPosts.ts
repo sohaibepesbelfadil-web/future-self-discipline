@@ -34,7 +34,7 @@ export const useCommunityPosts = () => {
       
       // Fetch profiles for those users
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('safe_profiles')
         .select('user_id, username, display_name, avatar_url')
         .in('user_id', userIds);
       

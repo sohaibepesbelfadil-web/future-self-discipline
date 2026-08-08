@@ -113,7 +113,7 @@ export const useGroupMembers = (groupId: string) => {
       const userIds = data.map(m => m.user_id);
       
       const [{ data: profiles }, { data: scores }] = await Promise.all([
-        supabase.from('profiles').select('user_id, username, display_name').in('user_id', userIds),
+        supabase.from('safe_profiles').select('user_id, username, display_name').in('user_id', userIds),
         supabase.from('user_scores').select('user_id, discipline_score, consistency_percentage').in('user_id', userIds),
       ]);
 
@@ -291,7 +291,7 @@ export const usePendingGroupMembers = (groupId: string) => {
       if (userIds.length === 0) return [];
 
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('safe_profiles')
         .select('user_id, username, display_name')
         .in('user_id', userIds);
 

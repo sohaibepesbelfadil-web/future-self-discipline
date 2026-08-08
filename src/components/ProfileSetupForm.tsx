@@ -68,8 +68,9 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onComplete, onBack,
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Please select an image file', variant: 'destructive' });
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: 'Please select a JPEG, PNG, WebP or GIF image', variant: 'destructive' });
       return;
     }
 
@@ -78,6 +79,11 @@ const ProfileSetupForm: React.FC<ProfileSetupFormProps> = ({ onComplete, onBack,
       toast({ title: 'Image must be less than 5MB', variant: 'destructive' });
       return;
     }
+
+    toast({
+      title: 'Avatar will be public',
+      description: 'Anyone with the link can view your avatar image.',
+    });
 
     setAvatarFile(file);
     
