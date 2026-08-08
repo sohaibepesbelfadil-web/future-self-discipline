@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("Apple auth error:", err);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }),
+      JSON.stringify({ error: "Authentication failed. Please try again." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
