@@ -49,6 +49,15 @@ const Community: React.FC = () => {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: 'Unsupported image type',
+          description: 'Please select a JPEG, PNG, WebP or GIF image',
+          variant: 'destructive',
+        });
+        return;
+      }
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: 'Image too large',
@@ -57,6 +66,10 @@ const Community: React.FC = () => {
         });
         return;
       }
+      toast({
+        title: 'Image will be public',
+        description: 'Anyone with the link can view images you post. Do not upload private content.',
+      });
       setSelectedImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
