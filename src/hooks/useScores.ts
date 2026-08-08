@@ -104,7 +104,7 @@ export const useLeaderboard = (limit = 50) => {
       // Get profiles for these users
       const userIds = scores.map(s => s.user_id);
       const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
+        .from('safe_profiles')
         .select('user_id, username, display_name, profile_visible')
         .in('user_id', userIds);
 
